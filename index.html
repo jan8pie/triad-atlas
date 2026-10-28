@@ -1,0 +1,702 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Triad Atlas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: a pale lesson sheet with two dark rosewood fretboards stacked under the controls.
+   Top board: the triad shapes. Bottom board: the scale they belong to, with the triad notes lifted out. */
+:root{
+  --bg:#E8EEEC; --surface:#F7F9F8; --ink:#12201E; --muted:#51625F; --line:#C4D0CD;
+  --chip:#DCE6E3; --accent:#0B6764; --accent-ink:#FFFFFF;
+  --board:#231B17; --wood:#33271F; --wire:#A9B0B3; --nut:#E3DCCB; --string:#D6CFBF;
+  --pearl:#CFC6B0; --board-ink:#BDB4A3;
+  --inv0:#F2A93B; --inv1:#4FC0B0; --inv2:#9D96F2; --on-inv:#1A140F;
+  --scale:#5B4A3E; --scale-ink:#EDE3D2; --tri:#F4ECDA; --root:#FF3B3B;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
+    --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
+  --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.5 var(--font-body);
+  padding-block:28px 56px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+button{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+.sheet{max-width:1120px; margin-inline:auto; display:grid; gap:26px}
+body.wide .sheet{max-width:1600px}
+.top{display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:16px 32px}
+.lead{flex:1 1 420px; min-width:0}
+.widthgrp{flex:0 0 auto}
+h1{
+  margin:0 0 8px; font:700 clamp(32px,5.5vw,48px)/1.05 var(--font-display);
+  letter-spacing:-0.02em; text-wrap:balance;
+}
+.intro{margin:0; max-width:64ch; color:var(--muted)}
+h2{margin:0}
+
+/* controls */
+.controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px 28px}
+.grp{min-width:0}
+.grp.wide{grid-column:1/-1}
+.lab{
+  margin-bottom:8px; font:600 11px/1.2 var(--font-mono);
+  letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
+}
+.lab em{font-style:normal; text-transform:none; letter-spacing:0; opacity:.85}
+.roots{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:6px}
+.seg{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  border:1px solid var(--line); background:var(--chip); border-radius:6px;
+  padding:8px 10px; min-height:42px; font-weight:600; font-size:14px; cursor:pointer;
+  text-align:center; line-height:1.2;
+}
+.chip small{display:block; margin-top:2px; font:400 11px/1.2 var(--font-mono); opacity:.8}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.roots .chip{padding:8px 2px; font-size:13px}
+.roots .chip small{font-size:9.5px; letter-spacing:-.02em}
+.seg .chip{flex:1 1 auto}
+
+/* stages */
+.stage{display:grid; gap:12px}
+.stage-head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:10px 16px}
+.stage-head h2{font:700 clamp(22px,3.4vw,30px)/1.15 var(--font-display); letter-spacing:-.01em}
+.now{margin:2px 0 0; color:var(--muted); font-size:14px; max-width:70ch}
+.play{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+.step{display:flex; align-items:center; gap:6px; margin-right:6px}
+#shape-count{font:500 13px/1.2 var(--font-mono); color:var(--muted); min-width:104px; text-align:center}
+.btn{
+  border:1px solid var(--accent); background:transparent; color:var(--accent);
+  border-radius:6px; padding:8px 14px; min-height:42px; font-weight:600; cursor:pointer;
+}
+.btn.sq{min-width:42px; padding:8px 0; font-size:20px; line-height:1}
+.btn:hover{background:var(--accent); color:var(--accent-ink)}
+.btn:disabled{opacity:.4; cursor:default}
+.btn:disabled:hover{background:transparent; color:var(--accent)}
+.board{background:var(--board); border:1px solid var(--line); border-radius:10px; overflow-x:auto; padding:6px 4px}
+.legend{display:flex; flex-wrap:wrap; gap:6px 20px; margin:0; padding:0; list-style:none; color:var(--muted); font-size:13px}
+.legend li{display:flex; align-items:center; gap:7px}
+.sw{width:14px; height:14px; border-radius:50%; border:1px solid var(--ink); display:inline-block; flex:none}
+.sw.s0{background:var(--inv0)} .sw.s1{background:var(--inv1)} .sw.s2{background:var(--inv2)}
+.sw.ring{background:transparent; border:3px solid var(--root)}
+.sw.halo{width:10px; height:10px; margin:0 3px; border:0; background:var(--muted); box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px var(--muted)}
+.sw.split{background:linear-gradient(90deg,var(--inv0) 50%,var(--inv1) 50%)}
+.sw.scl{background:var(--scale); border-color:var(--board)}
+.sw.tri{background:var(--tri); border-color:var(--board)}
+.sw.shp{width:10px; height:10px; margin:0 3px; border:0; background:var(--tri); box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--inv0)}
+.xmark{font:600 14px var(--font-mono); width:14px; text-align:center}
+
+/* fretboard svg */
+.fb{display:block; width:100%; min-width:800px; height:auto}
+.fb-wood{fill:var(--wood)}
+.fb-wire{stroke:var(--wire); stroke-width:2; opacity:.85}
+.fb-nut{stroke:var(--nut); stroke-width:6}
+.fb-string{stroke:var(--string)}
+.fb-inlay{fill:var(--pearl); opacity:.28}
+.fb-name{fill:var(--board-ink); font:600 12px var(--font-mono); text-anchor:middle}
+.fb-num{fill:var(--board-ink); font:400 11px var(--font-mono); text-anchor:middle; opacity:.55}
+.fb-num.mark{opacity:1; font-weight:600}
+.fb-x{fill:var(--board-ink); font:400 17px var(--font-mono); text-anchor:middle; opacity:.5}
+.fb-link{fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-width:2.5}
+.fb-link.sel{stroke-width:5}
+.fb-halo{fill:none; stroke-width:2.2}
+.fb-ring{fill:none; stroke:var(--board); stroke-width:1.5}
+.fb-ring.root{stroke:var(--root); stroke-width:3.5}
+.fb-txt{fill:var(--on-inv); font:700 11px var(--font-mono); text-anchor:middle; pointer-events:none}
+.fb-txt2{fill:var(--on-inv); font:600 8.5px var(--font-mono); text-anchor:middle; pointer-events:none}
+.fb-txt.s,.fb-txt2.s{fill:var(--scale-ink)}
+.fb-txt.s{font-weight:500}
+.dot{cursor:pointer}
+.i0{fill:var(--inv0)} .i1{fill:var(--inv1)} .i2{fill:var(--inv2)}
+.l0{stroke:var(--inv0)} .l1{stroke:var(--inv1)} .l2{stroke:var(--inv2)}
+.scl{fill:var(--scale)} .tri{fill:var(--tri)}
+
+.foot{margin:0; color:var(--muted); font-size:13px; max-width:80ch}
+
+@media (max-width:640px){
+  .roots{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .roots .chip small{font-size:10px}
+}
+</style>
+
+<main class="sheet">
+  <header class="top">
+    <div class="lead">
+    <h1>Triad Atlas</h1>
+    <p class="intro">Pick a chord, one or more sets of neighbouring strings and an inversion. The top fretboard shows the triad shapes. The bottom one shows the scale they come from, with the triad notes lifted out of it. Press Play to hear the selected shape.</p>
+    </div>
+    <div class="grp widthgrp"><h2 class="lab">Display</h2><div class="seg" id="widths" role="group" aria-label="Page width"></div></div>
+  </header>
+
+  <section class="controls" aria-label="Chord settings">
+    <div class="grp wide"><h2 class="lab">Root note</h2><div class="roots" id="roots" role="group" aria-label="Root note"></div></div>
+    <div class="grp"><h2 class="lab">Chord type</h2><div class="seg" id="quals" role="group" aria-label="Chord type"></div></div>
+    <div class="grp"><h2 class="lab">Scale <em>(bottom fretboard)</em></h2><div class="seg" id="scales" role="group" aria-label="Scale"></div></div>
+    <div class="grp"><h2 class="lab">Strings, low to high <em>(pick one or more)</em></h2><div class="seg" id="sets" role="group" aria-label="String sets"></div></div>
+    <div class="grp"><h2 class="lab">Inversion</h2><div class="seg" id="invs" role="group" aria-label="Inversion"></div></div>
+    <div class="grp"><h2 class="lab">Labels</h2><div class="seg" id="labels" role="group" aria-label="Dot labels"></div></div>
+    <div class="grp wide"><h2 class="lab">View</h2><div class="seg" id="views" role="group" aria-label="Fretboard view"></div></div>
+  </section>
+
+  <section class="stage" aria-label="Triad fretboard">
+    <div class="stage-head">
+      <div>
+        <h2 id="title"></h2>
+        <p class="now" id="now" aria-live="polite"></p>
+      </div>
+      <div class="play">
+        <div class="step" role="group" aria-label="Choose shape, from the nut upward">
+          <button type="button" class="btn sq" id="shape-prev" data-act="step" data-v="-1" aria-label="Previous shape, lower on the neck">‹</button>
+          <span id="shape-count" aria-live="polite"></span>
+          <button type="button" class="btn sq" id="shape-next" data-act="step" data-v="1" aria-label="Next shape, higher on the neck">›</button>
+        </div>
+        <button type="button" class="btn" id="play-chord">Play chord</button>
+        <button type="button" class="btn" id="play-arp">Play arpeggio</button>
+      </div>
+    </div>
+    <div class="board" id="boardWrap"></div>
+    <ul class="legend">
+      <li><span class="sw s0"></span>Root position</li>
+      <li><span class="sw s1"></span>1st inversion</li>
+      <li><span class="sw s2"></span>2nd inversion</li>
+      <li><span class="sw ring"></span>Red ring: chord root</li>
+      <li><span class="sw halo"></span>Outer ring: selected inversion</li>
+      <li><span class="sw split"></span>Split dot: note shared by two inversions</li>
+      <li><span class="xmark">×</span>String not played</li>
+    </ul>
+  </section>
+
+  <section class="stage" aria-label="Scale fretboard">
+    <div class="stage-head">
+      <div>
+        <h2 id="scaleTitle"></h2>
+        <p class="now" id="scaleNow"></p>
+      </div>
+    </div>
+    <div class="board" id="scaleWrap"></div>
+    <ul class="legend">
+      <li><span class="sw scl"></span>Scale note</li>
+      <li><span class="sw tri"></span>Triad note (root, 3rd, 5th)</li>
+      <li><span class="sw ring"></span>Red ring: chord root</li>
+      <li><span class="sw shp"></span>Outer ring and line: the triad shapes shown on the top fretboard, in their inversion colour</li>
+    </ul>
+  </section>
+
+  <p class="foot">Standard tuning (E A D G B e). Every triad shape is close position: the three notes stack within one octave on neighbouring strings. The scale fretboard always shows all six strings. Augmented and diminished chords use the simplest note names.</p>
+</main>
+
+<script>
+// ==LOGIC-START==
+// ---- Settings you can change ------------------------------------------------
+const TUNING = [40, 45, 50, 55, 59, 64];      // open strings as MIDI numbers, low E to high e (standard tuning)
+const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
+const MAX_FRET = 17;                           // highest fret the search looks at
+const FRET_EVENNESS = 0.5;                     // fret spacing: 0 = like a real guitar (frets get closer towards the high end), 1 = all frets equal
+const MAX_STRETCH = 4;                         // widest fret gap allowed between the lowest and highest fretted note
+const STRING_SETS = [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]];   // 0 = low E string
+// Scales: semis = semitones above the root, deg = labels shown in "Intervals" mode,
+// letters = which note letter each step uses (0 = same letter as the root, 1 = next letter, ...).
+// Every scale offered for a chord type must contain that chord's root, 3rd and 5th.
+const SCALES = {
+  ionian:     { name: 'major (Ionian)',          chip: 'Major',            semis: [0,2,4,5,7,9,11], deg: ['1','2','3','4','5','6','7'],                letters: [0,1,2,3,4,5,6] },
+  lydian:     { name: 'Lydian',                  chip: 'Lydian',           semis: [0,2,4,6,7,9,11], deg: ['1','2','3','♯4','5','6','7'],              letters: [0,1,2,3,4,5,6] },
+  mixolydian: { name: 'Mixolydian',              chip: 'Mixolydian',       semis: [0,2,4,5,7,9,10], deg: ['1','2','3','4','5','6','♭7'],              letters: [0,1,2,3,4,5,6] },
+  aeolian:    { name: 'natural minor (Aeolian)', chip: 'Natural minor',    semis: [0,2,3,5,7,8,10], deg: ['1','2','♭3','4','5','♭6','♭7'],            letters: [0,1,2,3,4,5,6] },
+  dorian:     { name: 'Dorian',                  chip: 'Dorian',           semis: [0,2,3,5,7,9,10], deg: ['1','2','♭3','4','5','6','♭7'],             letters: [0,1,2,3,4,5,6] },
+  harmonic:   { name: 'harmonic minor',          chip: 'Harmonic minor',   semis: [0,2,3,5,7,8,11], deg: ['1','2','♭3','4','5','♭6','7'],             letters: [0,1,2,3,4,5,6] },
+  locrian:    { name: 'Locrian',                 chip: 'Locrian',          semis: [0,1,3,5,6,8,10], deg: ['1','♭2','♭3','4','♭5','♭6','♭7'],          letters: [0,1,2,3,4,5,6] },
+  dimwh:      { name: 'whole-half diminished',   chip: 'Whole-half dim.',  semis: [0,2,3,5,6,8,9,11], deg: ['1','2','♭3','4','♭5','♭6','6','7'],      letters: null },
+  wholetone:  { name: 'whole tone',              chip: 'Whole tone',       semis: [0,2,4,6,8,10],   deg: ['1','2','3','♯4','♯5','♭7'],                letters: [0,1,2,3,4,6] },
+  lydianaug:  { name: 'Lydian augmented',        chip: 'Lydian augmented', semis: [0,2,4,6,8,9,11], deg: ['1','2','3','♯4','♯5','6','7'],             letters: [0,1,2,3,4,5,6] }
+};
+const SCALES_BY_Q = {            // first entry is the default for that chord type
+  maj: ['ionian', 'lydian', 'mixolydian'],
+  min: ['aeolian', 'dorian', 'harmonic'],
+  dim: ['locrian', 'dimwh'],
+  aug: ['wholetone', 'lydianaug']
+};
+// -----------------------------------------------------------------------------
+
+const QUALITIES = {
+  maj: { name: 'Major',      iv: [0, 4, 7], deg: ['1', '3',  '5']  },
+  min: { name: 'Minor',      iv: [0, 3, 7], deg: ['1', '♭3', '5']  },
+  dim: { name: 'Diminished', iv: [0, 3, 6], deg: ['1', '♭3', '♭5'] },
+  aug: { name: 'Augmented',  iv: [0, 4, 8], deg: ['1', '3',  '♯5'] }
+};
+const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const NAT_PC = [0, 2, 4, 5, 7, 9, 11];
+const MAJ_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+const ROOT_NAMES = {
+  maj: MAJ_ROOTS,
+  aug: MAJ_ROOTS,
+  min: ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B'],
+  dim: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+};
+const INV_NAMES = ['Root position', '1st inversion', '2nd inversion'];
+
+function nameToPc(n) {
+  const acc = n.slice(1);
+  return (NAT_PC[LETTERS.indexOf(n[0])] + (acc === '#' ? 1 : acc === 'b' ? -1 : 0) + 12) % 12;
+}
+function simpleName(pc, rootName) {
+  const flats  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const sharps = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  return (rootName.includes('b') || rootName === 'F') ? flats[pc] : sharps[pc];
+}
+// Spells one note by letter: letterOff letters above the root's letter, semi semitones above the root.
+// strict = avoid E#, B#, Cb, Fb (used for the chord's own notes).
+function spellTone(rootName, letterOff, semi, strict) {
+  const rl = LETTERS.indexOf(rootName[0]), rootPc = nameToPc(rootName);
+  const li = (rl + letterOff) % 7, pc = (rootPc + semi) % 12;
+  const d = ((pc - NAT_PC[li] + 18) % 12) - 6;
+  const name = LETTERS[li] + (d > 0 ? '#'.repeat(d) : d < 0 ? 'b'.repeat(-d) : '');
+  return (Math.abs(d) > 1 || (strict && ['E#', 'B#', 'Cb', 'Fb'].includes(name))) ? simpleName(pc, rootName) : name;
+}
+// Names of the three chord tones (root, 3rd, 5th): C E G, C Eb G, ...
+function chordNames(rootName, qKey) {
+  return QUALITIES[qKey].iv.map((semi, i) => spellTone(rootName, [0, 2, 4][i], semi, true));
+}
+// The scale laid out on the neck: byPc[pitch class] = { name, deg, idx }, triPc = pitch classes of root, 3rd, 5th.
+// The chord's own notes always keep the names used on the top fretboard.
+function scaleInfo(rootName, qKey, scaleKey) {
+  const sc = SCALES[scaleKey], rootPc = nameToPc(rootName), tri = chordNames(rootName, qKey);
+  const triPc = QUALITIES[qKey].iv.map(i => (rootPc + i) % 12);
+  const byPc = {};
+  sc.semis.forEach((semi, i) => {
+    const pc = (rootPc + semi) % 12;
+    byPc[pc] = { name: sc.letters ? spellTone(rootName, sc.letters[i], semi, false) : simpleName(pc, rootName), deg: sc.deg[i], idx: i };
+  });
+  triPc.forEach((pc, t) => { if (byPc[pc]) byPc[pc].name = tri[t]; });
+  return { sc, byPc, triPc, ordered: sc.semis.map(semi => byPc[(rootPc + semi) % 12]) };
+}
+function pretty(n) { return n[0] + n.slice(1).replace(/#/g, '♯').replace(/b/g, '♭'); }
+
+// All close-position shapes of one triad on one string set, sorted from the nut upward.
+// Each shape knows its string set (set), inversion (inv) and its number among shapes of that inversion (pos).
+function findShapes(rootPc, qKey, setIdx) {
+  const q = QUALITIES[qKey], strs = STRING_SETS[setIdx], out = [];
+  for (let inv = 0; inv < 3; inv++) {
+    const tones = [0, 1, 2].map(k => (k + inv) % 3);            // which chord tone sits on each string, low to high
+    const need = tones.map(t => (rootPc + q.iv[t]) % 12);
+    const cand = strs.map((s, j) => {
+      const a = [];
+      for (let f = 0; f <= MAX_FRET; f++) if ((TUNING[s] + f) % 12 === need[j]) a.push(f);
+      return a;
+    });
+    for (const f0 of cand[0]) for (const f1 of cand[1]) for (const f2 of cand[2]) {
+      const frets = [f0, f1, f2];
+      const pitches = frets.map((f, j) => TUNING[strs[j]] + f);
+      if (!(pitches[0] < pitches[1] && pitches[1] < pitches[2] && pitches[2] - pitches[0] < 12)) continue;
+      const fretted = frets.filter(f => f > 0);
+      if (fretted.length) {
+        const mn = Math.min(...fretted), mx = Math.max(...fretted);
+        if (mx - mn > MAX_STRETCH) continue;
+        if (fretted.length < 3 && mx > 5) continue;              // open strings only in first position
+      }
+      out.push({ inv, set: setIdx, strs, frets, pitches, tones, pos: 0 });
+    }
+  }
+  const avg = s => s.frets.reduce((a, b) => a + b, 0) / 3;
+  out.sort((a, b) => avg(a) - avg(b));
+  const seen = [0, 0, 0];
+  out.forEach(s => { s.pos = seen[s.inv]++; });
+  return out;
+}
+// ==LOGIC-END==
+
+// ---- Drawing --------------------------------------------------------------
+const $ = id => document.getElementById(id);
+// Wide layout: remembered per device, otherwise on for large screens
+function loadWide() {
+  try { const v = localStorage.getItem('triadAtlasWide'); if (v === '1') return true; if (v === '0') return false; } catch (err) { /* storage not available */ }
+  return (window.innerWidth || 0) >= 1280;
+}
+const state = { root: 0, q: 'maj', scale: 'ionian', sets: [3], selSet: 3, inv: 0, pos: 0, view: 'all', labels: 'notes', wide: loadWide() };
+const ROOT_LABELS = ['C', 'C♯|D♭', 'D', 'D♯|E♭', 'E', 'F', 'F♯|G♭', 'G', 'G♯|A♭', 'A', 'A♯|B♭', 'B'];
+const setLabel = si => STRING_SETS[si].map(s => 6 - s).join(' · ');
+const setNotes = si => STRING_SETS[si].map(s => STRING_NAMES[s]).join(' ');
+const avgFret = s => s.frets.reduce((a, b) => a + b, 0) / 3;
+
+const NUT_X = 64, OPEN_X = 38, TOP = 28, GAP = 34, VB_H = 248;
+const COMPACT_FRET_W1 = 66;          // width of the first fret in the compact layout
+const DOT_SCALE = 1.3;               // the wide layout keeps dots and labels at this on-screen size and spreads the frets instead
+const K_FRET = 1 - Math.pow(2, -1 / 12), K_NECK = 1 - Math.pow(2, -MAX_FRET / 12);
+let NECK_W = COMPACT_FRET_W1 / K_FRET * K_NECK;   // width from the nut to the last fret, recalculated by setGeometry()
+let VB_W = Math.ceil(NUT_X + NECK_W) + 22;
+const COMPACT_VB_W = VB_W;
+// x position of fret n: a blend of real guitar spacing and equal spacing, ending at the same place either way
+const fx = n => NUT_X + NECK_W * ((1 - FRET_EVENNESS) * (1 - Math.pow(2, -n / 12)) / K_NECK + FRET_EVENNESS * n / MAX_FRET);
+const cx = n => n === 0 ? OPEN_X : (fx(n - 1) + fx(n)) / 2;
+const sy = s => TOP + (5 - s) * GAP;
+function setGeometry(vbw) { VB_W = vbw; NECK_W = vbw - 22 - NUT_X; }
+function updateGeometry() {
+  let vbw = COMPACT_VB_W;
+  if (state.wide) {
+    const inner = $('boardWrap').clientWidth - 8;       // board width minus its padding
+    if (inner > 0) vbw = Math.max(COMPACT_VB_W, Math.floor(inner / DOT_SCALE));
+  }
+  setGeometry(vbw);
+}
+const STRING_W = [3.4, 2.8, 2.2, 1.7, 1.3, 1.0];
+
+function slicePath(x, y, r, a0, a1) {
+  const p = a => [(x + r * Math.cos(a)).toFixed(2), (y + r * Math.sin(a)).toFixed(2)];
+  const [x0, y0] = p(a0), [x1, y1] = p(a1);
+  return `M${x},${y} L${x0},${y0} A${r},${r} 0 ${(a1 - a0) > Math.PI ? 1 : 0} 1 ${x1},${y1} Z`;
+}
+
+function shapesOnBoard(c) {
+  if (state.view === 'single') return c.sel ? [c.sel] : [];
+  if (state.view === 'all') return c.all;
+  const k = +state.view.slice(3);
+  return c.all.filter(s => s.inv === k);
+}
+// shapes of the chosen inversion across the chosen string sets, from the nut upward (used by the previous/next buttons)
+function orderedForInv(c) {
+  return c.all.filter(s => s.inv === state.inv).sort((a, b) => avgFret(a) - avgFret(b) || a.set - b.set);
+}
+
+// Wood, inlays, frets, nut, strings and fret numbers. Returns the opening of the svg; the caller adds its dots and closes it.
+// usedStrings: a Set of strings that are played (the others get a ×), or null for no × marks.
+function boardFrame(usedStrings) {
+  const bottom = TOP + 5 * GAP;
+  let s = `<svg class="fb" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="Fretboard diagram">`;
+  s += `<rect class="fb-wood" x="${NUT_X}" y="${TOP - 17}" width="${VB_W - NUT_X - 6}" height="${5 * GAP + 34}" rx="3"/>`;
+  [3, 5, 7, 9, 15, 17].filter(n => n <= MAX_FRET).forEach(n => {
+    s += `<circle class="fb-inlay" cx="${cx(n)}" cy="${TOP + 2.5 * GAP}" r="6.5"/>`;
+  });
+  if (MAX_FRET >= 12) {
+    s += `<circle class="fb-inlay" cx="${cx(12)}" cy="${TOP + 1.5 * GAP}" r="6.5"/>`;
+    s += `<circle class="fb-inlay" cx="${cx(12)}" cy="${TOP + 3.5 * GAP}" r="6.5"/>`;
+  }
+  for (let n = 1; n <= MAX_FRET; n++) s += `<line class="fb-wire" x1="${fx(n)}" x2="${fx(n)}" y1="${TOP - 17}" y2="${bottom + 17}"/>`;
+  s += `<line class="fb-nut" x1="${NUT_X}" x2="${NUT_X}" y1="${TOP - 17}" y2="${bottom + 17}"/>`;
+  for (let k = 0; k < 6; k++) {
+    s += `<line class="fb-string" x1="${NUT_X}" x2="${VB_W - 6}" y1="${sy(k)}" y2="${sy(k)}" style="stroke-width:${STRING_W[k]}"/>`;
+    s += `<text class="fb-name" x="14" y="${sy(k)}" dy=".35em">${STRING_NAMES[k]}</text>`;
+    if (usedStrings && !usedStrings.has(k)) s += `<text class="fb-x" x="${OPEN_X}" y="${sy(k)}" dy=".35em">×</text>`;
+  }
+  const marks = [3, 5, 7, 9, 12, 15, 17];
+  for (let n = 1; n <= MAX_FRET; n++) {
+    s += `<text class="fb-num${marks.includes(n) ? ' mark' : ''}" x="${cx(n)}" y="${VB_H - 10}">${n}</text>`;
+  }
+  return s;
+}
+
+// connecting lines: other inversions first, then the selected inversion, then the selected shape on top
+function shapeLines(drawn, sel) {
+  const rank = sh => sh === sel ? 2 : (sh.inv === state.inv ? 1 : 0);
+  return drawn.slice().sort((a, b) => rank(a) - rank(b)).map(sh => {
+    const pts = sh.frets.map((f, j) => `${cx(f)},${sy(sh.strs[j])}`).join(' ');
+    return `<polyline class="fb-link l${sh.inv}${sh === sel ? ' sel' : ''}" points="${pts}"/>`;
+  }).join('');
+}
+
+function boardSVG(c) {
+  const { sel, names } = c, q = QUALITIES[state.q];
+  const drawn = shapesOnBoard(c);
+  const used = new Set(drawn.flatMap(s => s.strs));
+  const R = state.labels === 'both' ? 15 : 13;
+  let s = boardFrame(drawn.length ? used : null);
+  s += shapeLines(drawn, sel);
+
+  // dots: one per string and fret, even when shapes of different inversions share the note
+  const dots = new Map();
+  drawn.forEach(sh => sh.frets.forEach((f, j) => {
+    const key = sh.strs[j] + ':' + f;
+    let d = dots.get(key);
+    if (!d) { d = { s: sh.strs[j], f, tone: sh.tones[j], invs: [], shapes: [] }; dots.set(key, d); }
+    if (!d.invs.includes(sh.inv)) d.invs.push(sh.inv);
+    d.shapes.push(sh);
+  }));
+  dots.forEach(d => {
+    d.invs.sort();
+    const x = cx(d.f), y = sy(d.s);
+    let g = `<g class="dot" data-act="dot" data-sh="${d.shapes.map(sh => [sh.set, sh.inv, sh.pos].join('.')).join(' ')}">`;
+    if (state.view === 'all' && d.invs.includes(state.inv)) g += `<circle class="fb-halo l${state.inv}" cx="${x}" cy="${y}" r="${R + 4}"/>`;
+    if (d.invs.length === 1) g += `<circle class="i${d.invs[0]}" cx="${x}" cy="${y}" r="${R}"/>`;
+    else d.invs.forEach((inv, i) => {
+      const a0 = -Math.PI / 2 + i * 2 * Math.PI / d.invs.length, a1 = a0 + 2 * Math.PI / d.invs.length;
+      g += `<path class="i${inv}" d="${slicePath(x, y, R, a0, a1)}"/>`;
+    });
+    g += `<circle class="fb-ring${d.tone === 0 ? ' root' : ''}" cx="${x}" cy="${y}" r="${R}"/>`;
+    const note = pretty(names[d.tone]), deg = q.deg[d.tone];
+    if (state.labels === 'notes') g += `<text class="fb-txt" x="${x}" y="${y}" dy=".35em">${note}</text>`;
+    else if (state.labels === 'intervals') g += `<text class="fb-txt" x="${x}" y="${y}" dy=".35em">${deg}</text>`;
+    else {
+      g += `<text class="fb-txt" x="${x}" y="${y - 3.5}" dy=".35em">${note}</text>`;
+      g += `<text class="fb-txt2" x="${x}" y="${y + 8}" dy=".35em">${deg}</text>`;
+    }
+    s += g + '</g>';
+  });
+  return s + '</svg>';
+}
+
+// The scale on all six strings. Scale notes are muted, the triad notes are lifted out in a light colour,
+// and the triad shapes that are drawn on the top fretboard get their line and an outer ring here too.
+function scaleBoardSVG(c) {
+  const info = scaleInfo(c.rootName, state.q, state.scale);
+  const drawn = shapesOnBoard(c);
+  const Rt = state.labels === 'both' ? 15 : 13, Rs = Rt - 1.5;
+  const member = new Map();
+  drawn.forEach(sh => sh.frets.forEach((f, j) => {
+    const k = sh.strs[j] + ':' + f;
+    if (!member.has(k)) member.set(k, new Set());
+    member.get(k).add(sh.inv);
+  }));
+  let s = boardFrame(null);
+  s += shapeLines(drawn, c.sel);
+  member.forEach((invs, k) => {
+    const [st, fr] = k.split(':').map(Number);
+    const inv = invs.has(state.inv) ? state.inv : Math.min(...invs);
+    s += `<circle class="fb-halo l${inv}" cx="${cx(fr)}" cy="${sy(st)}" r="${Rt + 3.5}"/>`;
+  });
+  for (let st = 0; st < 6; st++) for (let f = 0; f <= MAX_FRET; f++) {
+    const pc = (TUNING[st] + f) % 12, n = info.byPc[pc];
+    if (!n) continue;
+    const t = info.triPc.indexOf(pc), isTri = t >= 0, r = isTri ? Rt : Rs;
+    const x = cx(f), y = sy(st), sc = isTri ? '' : ' s';
+    s += `<g><circle class="${isTri ? 'tri' : 'scl'}" cx="${x}" cy="${y}" r="${r}"/>`;
+    s += `<circle class="fb-ring${t === 0 ? ' root' : ''}" cx="${x}" cy="${y}" r="${r}"/>`;
+    const note = pretty(n.name);
+    if (state.labels === 'notes') s += `<text class="fb-txt${sc}" x="${x}" y="${y}" dy=".35em">${note}</text>`;
+    else if (state.labels === 'intervals') s += `<text class="fb-txt${sc}" x="${x}" y="${y}" dy=".35em">${n.deg}</text>`;
+    else {
+      s += `<text class="fb-txt${sc}" x="${x}" y="${y - 3.5}" dy=".35em">${note}</text>`;
+      s += `<text class="fb-txt2${sc}" x="${x}" y="${y + 8}" dy=".35em">${n.deg}</text>`;
+    }
+    s += '</g>';
+  }
+  return s + '</svg>';
+}
+
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function reveal(sel) {
+  const wrap = $('boardWrap'), svg = wrap.querySelector('svg');
+  if (!sel || !svg) return;
+  const scale = svg.getBoundingClientRect().width / VB_W;
+  const xs = sel.frets.map(cx);
+  const mid = (Math.min(...xs) + Math.max(...xs)) / 2 * scale;
+  wrap.scrollTo({ left: Math.max(0, mid - wrap.clientWidth / 2), behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+
+function current() {
+  const rootName = ROOT_NAMES[state.q][state.root];
+  const names = chordNames(rootName, state.q);
+  if (!state.sets.includes(state.selSet)) state.selSet = state.sets[0];
+  const bySet = {};
+  state.sets.forEach(si => { bySet[si] = findShapes(state.root, state.q, si); });
+  const mine = bySet[state.selSet].filter(s => s.inv === state.inv);
+  if (state.pos >= mine.length) state.pos = 0;
+  return { rootName, names, bySet, all: state.sets.flatMap(si => bySet[si]), sel: mine[state.pos] || null };
+}
+
+const chip = (id, act, v, label, sub) =>
+  `<button type="button" class="chip" id="${id}" data-act="${act}" data-v="${v}" aria-pressed="false">${label}${sub ? `<small>${sub}</small>` : ''}</button>`;
+let scaleChipsFor = null;
+
+function render() {
+  if (document.body) document.body.classList.toggle('wide', state.wide);
+  updateGeometry();
+  const c = current();
+  const { rootName, names, sel } = c;
+  const q = QUALITIES[state.q];
+
+  if (scaleChipsFor !== state.q) {       // the scale choices depend on the chord type
+    $('scales').innerHTML = SCALES_BY_Q[state.q].map(k =>
+      chip('scale-' + k, 'scale', k, SCALES[k].chip, SCALES[k].deg.join(' '))).join('');
+    scaleChipsFor = state.q;
+  }
+  const cur = { root: state.root, q: state.q, scale: state.scale, inv: state.inv, view: state.view, labels: state.labels, width: state.wide ? 'wide' : 'compact' };
+  document.querySelectorAll('[data-act]').forEach(b => {
+    const a = b.dataset.act, v = b.dataset.v;
+    if (a === 'set') b.setAttribute('aria-pressed', String(state.sets.includes(+v)));
+    else if (a === 'setall') b.setAttribute('aria-pressed', String(state.sets.length === STRING_SETS.length));
+    else if (a in cur) b.setAttribute('aria-pressed', String(String(cur[a]) === v));
+  });
+  [0, 1, 2].forEach(i => { $('inv-sub-' + i).textContent = 'bass ' + pretty(names[i]); });
+
+  // top fretboard
+  $('title').textContent = `${pretty(rootName)} ${q.name.toLowerCase()} · ${INV_NAMES[state.inv].toLowerCase()}`;
+  $('now').textContent = sel
+    ? `Selected shape: strings ${setLabel(sel.set)} (${setNotes(sel.set)}), frets ${sel.frets.join(' · ')}.`
+    : `No ${INV_NAMES[state.inv].toLowerCase()} shape fits on these strings within the first ${MAX_FRET} frets.`;
+  const list = orderedForInv(c), idx = list.findIndex(s => s === sel);
+  $('shape-count').textContent = list.length ? `Shape ${idx + 1} of ${list.length}` : 'No shapes';
+  $('shape-prev').disabled = $('shape-next').disabled = list.length < 2;
+  $('play-chord').disabled = $('play-arp').disabled = !sel;
+  $('boardWrap').innerHTML = boardSVG(c);
+  $('boardWrap').querySelector('svg').setAttribute('aria-label',
+    `${pretty(rootName)} ${q.name.toLowerCase()} on the fretboard` + (sel ? `, selected: ${INV_NAMES[sel.inv].toLowerCase()}, frets ${sel.frets.join(', ')}` : ''));
+
+  // scale fretboard
+  const info = scaleInfo(rootName, state.q, state.scale);
+  $('scaleTitle').textContent = `${pretty(rootName)} ${info.sc.name} scale`;
+  $('scaleNow').textContent = `Scale notes: ${info.ordered.map(n => pretty(n.name)).join(' · ')}. The triad notes ${names.map(pretty).join(' · ')} are lifted out in a lighter colour.`;
+  $('scaleWrap').innerHTML = scaleBoardSVG(c);
+  $('scaleWrap').querySelector('svg').setAttribute('aria-label',
+    `${pretty(rootName)} ${info.sc.name} scale on the fretboard, with the notes ${names.map(pretty).join(', ')} highlighted`);
+}
+
+// ---- Sound ---------------------------------------------------------------
+let ac = null;
+function pluck(midi, t0, dur) {
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+  osc.type = 'sawtooth'; osc.frequency.value = f;
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(Math.min(f * 9, 7000), t0);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.6, 320), t0 + 0.6);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(0.2, t0 + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+  osc.connect(lp); lp.connect(g); g.connect(ac.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.05);
+}
+function playShape(sel, mode) {
+  if (!sel) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    const t = ac.currentTime + 0.03, gap = mode === 'arp' ? 0.34 : 0.05;
+    sel.pitches.forEach((m, i) => pluck(m, t + i * gap, mode === 'arp' ? 1.8 : 2.4));
+  } catch (e) { /* audio not available */ }
+}
+
+// ---- Controls --------------------------------------------------------------
+$('roots').innerHTML = ROOT_LABELS.map((l, i) => chip('root-' + i, 'root', i, l.replace('|', '<small>') + (l.includes('|') ? '</small>' : ''), '')).join('');
+$('quals').innerHTML = Object.keys(QUALITIES).map(k => chip('q-' + k, 'q', k, QUALITIES[k].name, '')).join('');
+$('sets').innerHTML = STRING_SETS.map((st, i) => chip('set-' + i, 'set', i, setLabel(i), setNotes(i))).join('')
+  + chip('set-all', 'setall', 'all', 'All', 'four sets');
+$('invs').innerHTML = INV_NAMES.map((n, i) => chip('inv-' + i, 'inv', i, n, '<span id="inv-sub-' + i + '"></span>')).join('');
+$('labels').innerHTML = chip('labels-notes', 'labels', 'notes', 'Notes', 'C · E · G')
+  + chip('labels-intervals', 'labels', 'intervals', 'Intervals', '1 · 3 · 5')
+  + chip('labels-both', 'labels', 'both', 'Both', 'note + interval');
+$('views').innerHTML = chip('view-all', 'view', 'all', 'All shapes', 'every inversion, chosen strings')
+  + chip('view-inv0', 'view', 'inv0', 'Root position', 'all shapes, chosen strings')
+  + chip('view-inv1', 'view', 'inv1', '1st inversion', 'all shapes, chosen strings')
+  + chip('view-inv2', 'view', 'inv2', '2nd inversion', 'all shapes, chosen strings')
+  + chip('view-single', 'view', 'single', 'One shape', 'step with ‹ ›');
+
+$('widths').innerHTML = chip('width-wide', 'width', 'wide', 'Wide', 'spread frets')
+  + chip('width-compact', 'width', 'compact', 'Compact', 'fits small screens')
+  + '<button type="button" class="chip" id="fs-btn" aria-pressed="false" hidden>Full screen<small>hides browser bars</small></button>';
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const a = b.dataset.act, v = b.dataset.v;
+  if (a === 'root') { state.root = +v; state.pos = 0; }
+  else if (a === 'q') { state.q = v; state.scale = SCALES_BY_Q[v][0]; state.pos = 0; }
+  else if (a === 'scale') { state.scale = v; }
+  else if (a === 'set') {
+    const i = +v;
+    if (state.sets.includes(i)) {
+      if (state.sets.length > 1) {
+        state.sets = state.sets.filter(x => x !== i);
+        if (state.selSet === i) state.selSet = state.sets[0];
+      }
+    } else {
+      state.sets = [...state.sets, i].sort((x, y) => x - y);
+      state.selSet = i;
+    }
+    state.pos = 0;
+  }
+  else if (a === 'setall') {
+    state.sets = state.sets.length === STRING_SETS.length ? [state.selSet] : STRING_SETS.map((_, i) => i);
+    state.pos = 0;
+  }
+  else if (a === 'inv') {
+    state.inv = +v; state.pos = 0;
+    if (state.view.startsWith('inv')) state.view = 'inv' + v;
+  }
+  else if (a === 'view') {
+    state.view = v;
+    if (v.startsWith('inv')) { state.inv = +v.slice(3); state.pos = 0; }
+  }
+  else if (a === 'labels') { state.labels = v; }
+  else if (a === 'width') {
+    state.wide = v === 'wide';
+    try { localStorage.setItem('triadAtlasWide', state.wide ? '1' : '0'); } catch (err) { /* storage not available */ }
+  }
+  else if (a === 'step') {
+    const list = orderedForInv(current());
+    if (list.length) {
+      let i = list.findIndex(s => s.set === state.selSet && s.pos === state.pos);
+      i = (i + (+v) + list.length) % list.length;
+      state.selSet = list[i].set; state.pos = list[i].pos;
+    }
+  }
+  else if (a === 'dot') {
+    const opts = b.dataset.sh.split(' ').map(t => t.split('.').map(Number));   // [set, inv, pos]
+    const pick = opts.find(o => o[1] === state.inv && o[0] === state.selSet) || opts.find(o => o[1] === state.inv) || opts[0];
+    state.selSet = pick[0]; state.inv = pick[1]; state.pos = pick[2];
+    if (state.view.startsWith('inv')) state.view = 'inv' + state.inv;
+  }
+  render();
+  if (['root', 'q', 'set', 'setall', 'inv', 'view', 'step', 'dot', 'width'].includes(a)) reveal(current().sel);
+});
+$('play-chord').addEventListener('click', () => playShape(current().sel, 'chord'));
+$('play-arp').addEventListener('click', () => playShape(current().sel, 'arp'));
+
+// the two fretboards scroll together on narrow screens
+[['boardWrap', 'scaleWrap'], ['scaleWrap', 'boardWrap']].forEach(([from, to]) => {
+  $(from).addEventListener('scroll', () => {
+    const a = $(from), b = $(to);
+    if (Math.abs(a.scrollLeft - b.scrollLeft) > 1) b.scrollLeft = a.scrollLeft;
+  });
+});
+
+// Full screen: shown only where the browser offers it (most desktop browsers and Android Chrome; iPhones do not)
+const fsRoot = document.documentElement;
+const fsEnabled = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+function syncFullscreen() {
+  const b = $('fs-btn');
+  if (!b || !b.firstChild) return;
+  const on = !!fsElement();
+  b.hidden = !fsEnabled;
+  b.setAttribute('aria-pressed', String(on));
+  b.firstChild.textContent = on ? 'Exit full screen' : 'Full screen';
+}
+$('fs-btn').addEventListener('click', async () => {
+  try {
+    if (fsElement()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else await (fsRoot.requestFullscreen || fsRoot.webkitRequestFullscreen).call(fsRoot);
+  } catch (err) {
+    const note = $('fs-btn').lastChild;
+    if (note) note.textContent = 'not available in this view';
+  }
+});
+document.addEventListener('fullscreenchange', syncFullscreen);
+document.addEventListener('webkitfullscreenchange', syncFullscreen);
+syncFullscreen();
+
+if (window.addEventListener) {
+  let raf = 0;
+  window.addEventListener('resize', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; if (state.wide) render(); });
+  });
+}
+
+render();
+</script>
+
+</body></html>
