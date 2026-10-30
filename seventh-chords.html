@@ -1,0 +1,326 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Seventh Chords · Triad Atlas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the same pale lesson sheet as the triad page. One band per root string (E, A, D),
+   each with six small rosewood chord boxes: the major shape and the five chords built from it. */
+:root{
+  --bg:#E8EEEC; --surface:#F7F9F8; --ink:#12201E; --muted:#51625F; --line:#C4D0CD;
+  --chip:#DCE6E3; --accent:#0B6764; --accent-ink:#FFFFFF;
+  --board:#231B17; --wood:#33271F; --wire:#A9B0B3; --string:#D6CFBF; --board-ink:#BDB4A3;
+  --tri:#F4ECDA; --on-dot:#1A140F; --root:#FF3B3B; --on-root:#FFFFFF;
+  --c3:#F5C93B; --c7:#4CC764; --c5:#58A8F2;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
+    --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
+  --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.5 var(--font-body);
+  padding-block:28px 56px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+button{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+.sheet{max-width:1120px; margin-inline:auto; display:grid; gap:26px}
+.nav{margin:0 0 10px; font:600 12px/1.2 var(--font-mono); letter-spacing:.06em; text-transform:uppercase}
+.nav a{color:var(--accent); text-decoration:none}
+.nav a:hover{text-decoration:underline}
+h1{
+  margin:0 0 8px; font:700 clamp(32px,5.5vw,48px)/1.05 var(--font-display);
+  letter-spacing:-0.02em; text-wrap:balance;
+}
+.intro{margin:0; max-width:70ch; color:var(--muted)}
+h2{margin:0}
+
+/* controls */
+.controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px 28px}
+.grp{min-width:0}
+.lab{
+  margin-bottom:8px; font:600 11px/1.2 var(--font-mono);
+  letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
+}
+.seg{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  flex:1 1 auto; border:1px solid var(--line); background:var(--chip); border-radius:6px;
+  padding:8px 10px; min-height:42px; font-weight:600; font-size:14px; cursor:pointer;
+  text-align:center; line-height:1.2;
+}
+.chip small{display:block; margin-top:2px; font:400 11px/1.2 var(--font-mono); opacity:.8}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+
+/* legend */
+.legend{display:flex; flex-wrap:wrap; gap:6px 20px; margin:0; padding:0; list-style:none; color:var(--muted); font-size:13px}
+.legend li{display:flex; align-items:center; gap:7px}
+.sw{width:14px; height:14px; border-radius:50%; border:1px solid var(--ink); display:inline-block; flex:none}
+.sw.root{background:var(--root)} .sw.tri{background:var(--tri)}
+.sw.c3{background:var(--c3)} .sw.c7{background:var(--c7)} .sw.c5{background:var(--c5)}
+.sw.ghost{background:transparent; border:1.5px dashed var(--muted)}
+.xmark{font:600 14px var(--font-mono); width:14px; text-align:center}
+
+/* one band per root string */
+.bands{display:grid; gap:34px}
+.band{display:grid; gap:12px}
+.band-head h2{font:700 clamp(22px,3.4vw,30px)/1.15 var(--font-display); letter-spacing:-.01em}
+.band-head p{margin:2px 0 0; color:var(--muted); font-size:14px; max-width:75ch}
+.cards{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px}   /* top row: major family, bottom row: minor family */
+@media (min-width:1000px){.cards{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.card{
+  display:flex; flex-direction:column; align-items:stretch; gap:6px; margin:0;
+  background:var(--board); border:1px solid var(--line); border-radius:10px;
+  padding:10px 8px 10px; cursor:pointer; text-align:center;
+}
+.card:hover{border-color:var(--accent)}
+.cname{color:var(--tri); font:600 22px/1.2 var(--font-body)}
+.cname sup{font-size:13px; vertical-align:9px; margin-left:1px}
+.cname span{border-radius:4px; padding:0 2px}
+.cname .c3{background:var(--c3); color:var(--on-dot)}
+.cname .c7{background:var(--c7); color:var(--on-dot)}
+.cname .c5{background:var(--c5); color:var(--on-dot)}
+.how{color:var(--board-ink); font:400 11.5px/1.4 var(--font-mono)}
+
+/* chord box svg */
+.cb{display:block; width:100%; max-width:170px; height:auto; margin-inline:auto}
+.cb-wood{fill:var(--wood)}
+.cb-wire{stroke:var(--wire); stroke-width:1.6; opacity:.85}
+.cb-string{stroke:var(--string)}
+.cb-x{fill:var(--board-ink); font:400 15px var(--font-mono); text-anchor:middle}
+.cb-fret{fill:var(--board-ink); font:400 10px var(--font-mono); text-anchor:end; opacity:.6}
+.cb-barre{stroke:var(--tri); stroke-width:10; stroke-linecap:round; opacity:.22}
+.cb-move{stroke-width:5; stroke-linecap:round; opacity:.75}
+.cb-ghost{fill:none; stroke:var(--board-ink); stroke-width:1.3; stroke-dasharray:3 2.5; opacity:.8}
+.cb-dot{stroke:var(--board); stroke-width:1.2}
+.cb-txt{fill:var(--on-dot); font:700 10.5px var(--font-mono); text-anchor:middle; pointer-events:none}
+.cb-txt.root{fill:var(--on-root)}
+.f-tri{fill:var(--tri)} .f-root{fill:var(--root)}
+.f-c3{fill:var(--c3)} .f-c7{fill:var(--c7)} .f-c5{fill:var(--c5)}
+.s-c3{stroke:var(--c3)} .s-c7{stroke:var(--c7)} .s-c5{stroke:var(--c5)}
+
+.foot{margin:0; color:var(--muted); font-size:13px; max-width:80ch}
+</style>
+
+<main class="sheet">
+  <header>
+    <p class="nav"><a href="./">← Triad Atlas</a></p>
+    <h1>Seventh Chords</h1>
+    <p class="intro">How seventh chords are built from one major chord shape. Start with the major shape, then move one or two notes down by a fret or two: the 3 becomes ♭3 (minor), one of the roots becomes ♭7 or 7, and the 5 becomes ♭5. X stands for any root note, because the shapes move up and down the neck. Click a chord box to hear it.</p>
+  </header>
+
+  <section class="controls" aria-label="Display settings">
+    <div class="grp"><h2 class="lab">Root on string</h2><div class="seg" id="strs" role="group" aria-label="Root string"></div></div>
+    <div class="grp"><h2 class="lab">Numbers in the dots</h2><div class="seg" id="labels" role="group" aria-label="Dot labels"></div></div>
+    <div class="grp"><h2 class="lab">Moves from the major shape</h2><div class="seg" id="moves" role="group" aria-label="Show moves"></div></div>
+  </section>
+
+  <ul class="legend">
+    <li><span class="sw root"></span>1: root</li>
+    <li><span class="sw tri"></span>3 and 5 from the major shape</li>
+    <li><span class="sw c3"></span>♭3: minor third</li>
+    <li><span class="sw c7"></span>♭7 or 7: the seventh</li>
+    <li><span class="sw c5"></span>♭5: flat fifth</li>
+    <li><span class="sw ghost"></span>Where the note was in the major shape</li>
+    <li><span class="xmark">×</span>String not played</li>
+  </ul>
+
+  <div id="bands" class="bands"></div>
+
+  <p class="foot" id="foot"></p>
+</main>
+
+<script>
+// ---- Settings you can change ------------------------------------------------
+const TUNING = [40, 45, 50, 55, 59, 64];      // open strings as MIDI numbers, low E to high e (standard tuning)
+const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
+const FRET_WINDOW = [-1, 3];                   // frets drawn in each box, counted from the root fret (0): one above it, three below it
+// Chord types, in the order they are shown. parts = the coloured bits of the name after X:
+// [text, colour (c3 = yellow, c7 = green, c5 = blue), 1 = written small and raised].
+const CHORD_TYPES = [
+  { key: 'maj',  parts: [] },
+  { key: '7',    parts: [['7', 'c7', 1]] },
+  { key: 'maj7', parts: [['maj7', 'c7', 1]] },
+  { key: 'm',    parts: [['m', 'c3', 0]] },
+  { key: 'm7',   parts: [['m', 'c3', 0], ['7', 'c7', 1]] },
+  { key: 'm7b5', parts: [['m', 'c3', 0], ['7', 'c7', 1], ['(♭5)', 'c5', 1]] }
+];
+// The shapes. root = string with the lowest root (0 = low E). Frets are counted from the root fret:
+// 0 = the root fret, 1 = one fret higher, -1 = one fret lower, null = string not played.
+// barre = [from string, to string] laid flat across the root fret, or null.
+// The numbers under each chord (1, 5, ♭7 ...) are worked out from the frets, so only the frets need changing.
+const SHAPES = [
+  { root: 0, title: 'Root on the E string', note: 'The E-shape barre chord: the barre sits on the root fret and the low and high E strings both play the root.',
+    play: 5,   // the fret used when you click to listen (5 = A)
+    chords: {
+      maj:  { frets: [0, 2, 2, 1, 0, 0],       barre: [0, 5] },
+      m:    { frets: [0, 2, 2, 0, 0, 0],       barre: [0, 5] },
+      7:    { frets: [0, 2, 0, 1, 0, 0],       barre: [0, 5] },
+      m7:   { frets: [0, 2, 0, 0, 0, 0],       barre: [0, 5] },
+      maj7: { frets: [0, null, 1, 1, 0, null], barre: null },
+      m7b5: { frets: [0, null, 0, 0, -1, null], barre: null }
+    } },
+  { root: 1, title: 'Root on the A string', note: 'The A-shape barre chord: the low E string is not played, the barre covers the A to high e strings.',
+    play: 3,   // 3 = C
+    chords: {
+      maj:  { frets: [null, 0, 2, 2, 2, 0],    barre: [1, 5] },
+      m:    { frets: [null, 0, 2, 2, 1, 0],    barre: [1, 5] },
+      7:    { frets: [null, 0, 2, 0, 2, 0],    barre: [1, 5] },
+      m7:   { frets: [null, 0, 2, 0, 1, 0],    barre: [1, 5] },
+      maj7: { frets: [null, 0, 2, 1, 2, 0],    barre: [1, 5] },
+      m7b5: { frets: [null, 0, 1, 0, 1, null], barre: null }
+    } },
+  { root: 2, title: 'Root on the D string', note: 'The D shape on the four high strings: the root on the D string, the second root on the B string. The low E and A strings are not played.',
+    play: 5,   // 5 = G
+    chords: {
+      maj:  { frets: [null, null, 0, 2, 3, 2], barre: null },
+      m:    { frets: [null, null, 0, 2, 3, 1], barre: null },
+      7:    { frets: [null, null, 0, 2, 1, 2], barre: null },
+      m7:   { frets: [null, null, 0, 2, 1, 1], barre: null },
+      maj7: { frets: [null, null, 0, 2, 2, 2], barre: null },
+      m7b5: { frets: [null, null, 0, 1, 1, 1], barre: null }
+    } }
+];
+// -----------------------------------------------------------------------------
+
+// semitones above the root -> degree, and the colour a changed note gets
+const DEGREES = { 0: '1', 3: '♭3', 4: '3', 6: '♭5', 7: '5', 10: '♭7', 11: '7' };
+const DEG_COLOUR = { '♭3': 'c3', '♭7': 'c7', '7': 'c7', '♭5': 'c5' };
+const NOTE_NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+const $ = id => document.getElementById(id);
+const state = { str: 'all', labels: 'all', moves: true };
+
+// degree of the note on string s, fret f (counted from the root fret), e.g. '♭7'
+const degreeOf = (shape, s, f) => DEGREES[(((TUNING[s] + f - TUNING[shape.root]) % 12) + 12) % 12] || '?';
+
+// Chord box geometry (svg units)
+const SG = 22, FH = 30, LEFT = 26, TOPY = 26, R = 9.5;
+const NROWS = FRET_WINDOW[1] - FRET_WINDOW[0] + 1;
+const BOX_W = LEFT + 5 * SG + 16, BOX_H = TOPY + NROWS * FH + 8;
+const xs = s => LEFT + s * SG;
+const fy = f => TOPY + (f - FRET_WINDOW[0] + 0.5) * FH;      // middle of the fret space
+
+function boxSVG(shape, key) {
+  const ch = shape.chords[key], maj = shape.chords.maj;
+  let s = `<svg class="cb" viewBox="0 0 ${BOX_W} ${BOX_H}" aria-hidden="true">`;
+  s += `<rect class="cb-wood" x="${LEFT - 8}" y="${TOPY}" width="${5 * SG + 16}" height="${NROWS * FH}" rx="2"/>`;
+  for (let r = 0; r <= NROWS; r++) s += `<line class="cb-wire" x1="${LEFT}" x2="${xs(5)}" y1="${TOPY + r * FH}" y2="${TOPY + r * FH}"/>`;
+  for (let k = 0; k < 6; k++) {
+    s += `<line class="cb-string" x1="${xs(k)}" x2="${xs(k)}" y1="${TOPY}" y2="${TOPY + NROWS * FH}" style="stroke-width:${(2.2 - k * 0.25).toFixed(2)}"/>`;
+    if (ch.frets[k] === null) s += `<text class="cb-x" x="${xs(k)}" y="${TOPY - 9}">×</text>`;
+  }
+  s += `<text class="cb-fret" x="${LEFT - 11}" y="${fy(0)}" dy=".35em">X</text>`;   // marks the root fret
+  if (ch.barre) s += `<line class="cb-barre" x1="${xs(ch.barre[0])}" x2="${xs(ch.barre[1])}" y1="${fy(0)}" y2="${fy(0)}"/>`;
+  // moves: a coloured line from where the note sat in the major shape, and a dashed ring there
+  const changed = k => ch.frets[k] !== null && maj.frets[k] !== null && ch.frets[k] !== maj.frets[k];
+  if (state.moves) ch.frets.forEach((f, k) => {
+    if (!changed(k)) return;
+    const col = DEG_COLOUR[degreeOf(shape, k, f)] || 'c7';
+    s += `<line class="cb-move s-${col}" x1="${xs(k)}" x2="${xs(k)}" y1="${fy(maj.frets[k])}" y2="${fy(f)}"/>`;
+    s += `<circle class="cb-ghost" cx="${xs(k)}" cy="${fy(maj.frets[k])}" r="${R - 1}"/>`;
+  });
+  ch.frets.forEach((f, k) => {
+    if (f === null) return;
+    const d = degreeOf(shape, k, f), isRoot = d === '1';
+    const fill = isRoot ? 'f-root' : DEG_COLOUR[d] ? 'f-' + DEG_COLOUR[d] : 'f-tri';
+    s += `<circle class="cb-dot ${fill}" cx="${xs(k)}" cy="${fy(f)}" r="${R}"/>`;
+    const show = state.labels === 'all' || isRoot || DEG_COLOUR[d];
+    if (show) s += `<text class="cb-txt${isRoot ? ' root' : ''}" x="${xs(k)}" y="${fy(f)}" dy=".35em">${d}</text>`;
+  });
+  return s + '</svg>';
+}
+
+// What changed compared with the major shape, e.g. "1 → ♭7 (D string)"
+function howText(shape, key) {
+  if (key === 'maj') return 'Starting shape<br>1 · 3 · 5';
+  const ch = shape.chords[key], maj = shape.chords.maj, out = [];
+  ch.frets.forEach((f, k) => {
+    const m = maj.frets[k];
+    if (f === null && m !== null) out.push(`mute ${STRING_NAMES[k]}`);
+    else if (f !== null && m !== null && f !== m) out.push(`${degreeOf(shape, k, m)} → ${degreeOf(shape, k, f)} (${STRING_NAMES[k]})`);
+  });
+  return out.join('<br>');
+}
+
+const nameHTML = t => 'X' + t.parts.map(([txt, col, sup]) => sup ? `<sup><span class="${col}">${txt}</span></sup>` : `<span class="${col}">${txt}</span>`).join('');
+const plainName = t => 'X' + t.parts.map(p => p[0]).join('');
+
+function render() {
+  document.querySelectorAll('[data-act]').forEach(b => {
+    const cur = { str: state.str, labels: state.labels, moves: state.moves ? 'on' : 'off' };
+    b.setAttribute('aria-pressed', String(String(cur[b.dataset.act]) === b.dataset.v));
+  });
+  $('bands').innerHTML = SHAPES.map((shape, i) => {
+    if (state.str !== 'all' && +state.str !== i) return '';
+    const cards = CHORD_TYPES.map(t => {
+      const deg = shape.chords[t.key].frets.map((f, k) => f === null ? '×' : degreeOf(shape, k, f)).join(' ');
+      return `<button type="button" class="card" data-play="${i}.${t.key}" aria-label="Play ${plainName(t)}, root on the ${STRING_NAMES[shape.root]} string: ${deg}">
+        <span class="cname">${nameHTML(t)}</span>${boxSVG(shape, t.key)}<span class="how">${howText(shape, t.key)}</span></button>`;
+    }).join('');
+    return `<section class="band" aria-label="${shape.title}"><div class="band-head"><h2>${shape.title}</h2><p>${shape.note}</p></div><div class="cards">${cards}</div></section>`;
+  }).join('');
+  $('foot').textContent = 'Standard tuning (E A D G B e). The X next to each box marks the root fret. Clicking a box plays it with the root on fret '
+    + SHAPES.map(sh => `${sh.play} of the ${STRING_NAMES[sh.root]} string (${NOTE_NAMES[(TUNING[sh.root] + sh.play) % 12]})`).join(', ') + '.';
+}
+
+// ---- Sound ---------------------------------------------------------------
+let ac = null;
+function pluck(midi, t0, dur) {
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+  osc.type = 'sawtooth'; osc.frequency.value = f;
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(Math.min(f * 9, 7000), t0);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.6, 320), t0 + 0.6);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(0.16, t0 + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+  osc.connect(lp); lp.connect(g); g.connect(ac.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.05);
+}
+function playChord(shape, key) {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    const t = ac.currentTime + 0.03;
+    shape.chords[key].frets.map((f, k) => f === null ? null : TUNING[k] + shape.play + f)
+      .filter(m => m !== null).forEach((m, i) => pluck(m, t + i * 0.05, 2.4));
+  } catch (e) { /* audio not available */ }
+}
+
+// ---- Controls --------------------------------------------------------------
+const chip = (act, v, label, sub) =>
+  `<button type="button" class="chip" data-act="${act}" data-v="${v}" aria-pressed="false">${label}${sub ? `<small>${sub}</small>` : ''}</button>`;
+$('strs').innerHTML = chip('str', 'all', 'All', 'E · A · D') + SHAPES.map((sh, i) => chip('str', i, STRING_NAMES[sh.root], `${6 - sh.root}th string`)).join('');
+$('labels').innerHTML = chip('labels', 'all', 'All degrees', '1 · 3 · 5 · ♭7') + chip('labels', 'changes', 'Changes only', 'root + new notes');
+$('moves').innerHTML = chip('moves', 'on', 'Show', 'line from old spot') + chip('moves', 'off', 'Hide', 'just the shape');
+
+document.addEventListener('click', e => {
+  const p = e.target.closest('[data-play]');
+  if (p) { const [i, key] = p.dataset.play.split('.'); playChord(SHAPES[+i], key); return; }
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const a = b.dataset.act, v = b.dataset.v;
+  if (a === 'str') state.str = v;
+  else if (a === 'labels') state.labels = v;
+  else if (a === 'moves') state.moves = v === 'on';
+  render();
+});
+
+render();
+</script>
+
+</body></html>
