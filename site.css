@@ -6,7 +6,7 @@
   color-scheme:light;
   /* the page */
   --bg:#F3F0E8; --surface:#FFFDF9; --ink:#1C1713; --muted:#675E53; --line:#DDD5C6;
-  --chip:#EAE4D7; --accent:#0B6764; --accent-ink:#FFFFFF; --glow:rgba(11,103,100,.10);
+  --chip:#EAE4D7; --btn:#FFFDF9; --btn-line:#CFC6B4; --accent:#0B6764; --accent-ink:#FFFFFF; --glow:rgba(11,103,100,.10);
   --shadow:0 1px 2px rgba(40,28,16,.05), 0 10px 28px -14px rgba(40,28,16,.22);
   /* the fretboards and chord boxes */
   --board:#211915; --board-hi:#2C211B; --wood:#33271F; --wire:#A9B0B3; --nut:#E3DCCB; --string:#D6CFBF;
@@ -32,7 +32,7 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#14110F; --surface:#1D1916; --ink:#EFE8DC; --muted:#A79D8E; --line:#352D26;
-    --chip:#28221D; --accent:#5CCDB9; --accent-ink:#06201D; --glow:rgba(92,205,185,.09);
+    --chip:#28221D; --btn:#3A322B; --btn-line:#4A4037; --accent:#5CCDB9; --accent-ink:#06201D; --glow:rgba(92,205,185,.09);
     --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
     --board:#0E0B09; --board-hi:#181310; --wood:#2B211B;
     color-scheme:dark;
@@ -40,7 +40,7 @@
 }
 :root[data-theme="dark"]{
   --bg:#14110F; --surface:#1D1916; --ink:#EFE8DC; --muted:#A79D8E; --line:#352D26;
-  --chip:#28221D; --accent:#5CCDB9; --accent-ink:#06201D; --glow:rgba(92,205,185,.09);
+  --chip:#28221D; --btn:#3A322B; --btn-line:#4A4037; --accent:#5CCDB9; --accent-ink:#06201D; --glow:rgba(92,205,185,.09);
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
   --board:#0E0B09; --board-hi:#181310; --wood:#2B211B;
   color-scheme:dark;
@@ -98,6 +98,10 @@ body.wide .bar-in{max-width:1632px}
   .nav::-webkit-scrollbar{display:none}
   .nav a{padding:8px 12px}
 }
+/* phone held sideways (a low screen): the bar scrolls away with the page instead of staying on top */
+@media (max-height:540px){
+  .bar{position:static}
+}
 
 /* ---- page frame ---- */
 .sheet{
@@ -134,13 +138,16 @@ h1{font:700 clamp(36px,6.2vw,58px)/1.02 var(--font-display); letter-spacing:-.02
 .lab em{font-style:normal; text-transform:none; letter-spacing:0; opacity:.85}
 .seg{display:flex; flex-wrap:wrap; gap:4px; padding:4px; background:var(--chip); border-radius:13px}
 .chip{
-  flex:1 1 auto; border:0; background:transparent; border-radius:9px;
-  padding:7px 10px; min-height:42px; font-weight:600; font-size:14px; cursor:pointer;
-  text-align:center; line-height:1.2; transition:background-color .15s, color .15s;
+  /* a button that is not selected: light face, thin edge and a small shadow, so it reads as a button (colours: --btn, --btn-line) */
+  flex:1 1 auto; border:1px solid var(--btn-line); background:var(--btn); border-radius:9px;
+  padding:6px 10px; min-height:42px; font-weight:600; font-size:14px; cursor:pointer;
+  text-align:center; line-height:1.2; box-shadow:0 1px 0 var(--btn-line);
+  transition:background-color .15s, color .15s, border-color .15s;
 }
 .chip small{display:block; margin-top:2px; font:400 11px/1.2 var(--font-mono); opacity:.75}
-.chip:hover{background:color-mix(in srgb, var(--surface) 75%, transparent)}
-.chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.chip:hover{border-color:var(--accent)}
+.chip:active{transform:translateY(1px); box-shadow:none}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
 .btn{
   border:1px solid var(--accent); background:transparent; color:var(--accent);
   border-radius:11px; padding:8px 16px; min-height:42px; font-weight:600; cursor:pointer;
