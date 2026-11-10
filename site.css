@@ -117,6 +117,11 @@ h1{font:700 clamp(36px,6.2vw,58px)/1.02 var(--font-display); letter-spacing:-.02
 .controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px 26px}
 .grp{min-width:0}
 .grp.wide{grid-column:1/-1}
+/* Labels and their buttons share rows, so the buttons line up even when one label wraps onto two lines. */
+@supports (grid-template-rows:subgrid){
+  .controls > .grp{display:grid; grid-template-rows:subgrid; grid-row:span 2; row-gap:0}
+  .controls > .grp > .lab{align-self:end}
+}
 .lab{
   margin-bottom:8px; font:600 11px/1.2 var(--font-mono);
   letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
