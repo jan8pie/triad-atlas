@@ -5,6 +5,7 @@
   // The menu. To add a page, add one line here: it then shows up on every page.
   const PAGES = [
     { href: './',                  label: 'Triads' },
+    { href: 'major-minor.html',    label: 'Major & minor' },
     { href: 'seventh-chords.html', label: 'Seventh chords' },
     { href: 'sus-chords.html',     label: 'Sus chords' },
     { href: 'added-chords.html',   label: '6 & add9 chords' }

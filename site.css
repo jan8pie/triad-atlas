@@ -212,9 +212,13 @@ h1{font:700 clamp(36px,6.2vw,58px)/1.02 var(--font-display); letter-spacing:-.02
 
 /* The moving dots: a note that changed slides from its place in the major shape to its new place.
    It plays when a box scrolls into view, when the mouse is over it and when you click it.
-   --dy (set by the page script) is how far the dot travels. Change .7s to make it slower or faster. */
-@keyframes cb-slide-a{0%,18%{transform:translateY(var(--dy))} 100%{transform:none}}
-@keyframes cb-slide-b{0%,18%{transform:translateY(var(--dy))} 100%{transform:none}}
+   --dy and --dx (set by the page script) are how far the dot travels. Change .7s to make it slower or faster. */
+@keyframes cb-slide-a{0%,18%{transform:translate(var(--dx,0px),var(--dy,0px))} 100%{transform:none}}
+@keyframes cb-slide-b{0%,18%{transform:translate(var(--dx,0px),var(--dy,0px))} 100%{transform:none}}
+/* a note that is new in a build-up step pops in */
+@keyframes cb-pop-a{0%,12%{transform:scale(0)} 70%{transform:scale(1.18)}}
+@keyframes cb-pop-b{0%,12%{transform:scale(0)} 70%{transform:scale(1.18)}}
+.cb-new{transform-box:fill-box; transform-origin:center}
 @keyframes cb-fade-a{0%,18%{opacity:0}}
 @keyframes cb-fade-b{0%,18%{opacity:0}}
 @media (prefers-reduced-motion: no-preference){
@@ -222,6 +226,8 @@ h1{font:700 clamp(36px,6.2vw,58px)/1.02 var(--font-display); letter-spacing:-.02
   .card:hover .cb-move{animation:cb-fade-a .7s ease-out both}
   .card.go .cb-mv{animation:cb-slide-b .7s cubic-bezier(.3,1.25,.5,1) both}
   .card.go .cb-move{animation:cb-fade-b .7s ease-out both}
+  .card:hover .cb-new{animation:cb-pop-a .55s ease-out both}
+  .card.go .cb-new{animation:cb-pop-b .55s ease-out both}
 }
 
 .foot{margin:0; color:var(--muted); font-size:13px; max-width:80ch; padding-top:20px; border-top:1px solid var(--line)}

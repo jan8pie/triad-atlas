@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Major and Minor Chords · Triad Atlas</title>
+<meta name="description" content="How major and minor guitar chords are built: the 1, 3 and 5, step by step, with the root on the E, A or D string.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%23211915'/%3E%3Cpath d='M7 20.5 14 13l7-5.5' fill='none' stroke='%23BDB4A3' stroke-width='1.6'/%3E%3Ccircle cx='7' cy='20.5' r='3.6' fill='%23FF3B3B'/%3E%3Ccircle cx='14' cy='13' r='3.6' fill='%23F4ECDA'/%3E%3Ccircle cx='21' cy='7.5' r='3.6' fill='%23F4ECDA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). site.js = the top menu and the light/dark button. -->
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<style>
+/* Only this page: four build-up steps per root string (two by two on phones), and the two wide "recipe" boxes. */
+.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:760px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.cards.recipe{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.cb.ruler{max-width:440px}
+.cb-span{stroke:var(--board-ink); stroke-width:1.2; fill:none; opacity:.7}
+.cb-spantxt{fill:var(--board-ink); font:400 10px var(--font-mono); text-anchor:middle}
+.stepno{display:block; margin-bottom:2px; color:var(--board-ink); font:600 10.5px/1.2 var(--font-mono); letter-spacing:.08em; text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<main class="sheet">
+  <header class="hero">
+    <p class="eyebrow">Where every chord starts</p>
+    <h1>Major and Minor Chords</h1>
+    <p class="intro">A major chord is three notes: the 1 (root), the 3 and the 5. A full guitar shape only repeats them across the strings. A minor chord differs in a single note: the 3 drops one fret and becomes ♭3. Each row below builds one shape step by step: find the roots, add the 5, add the 3, then lower the 3 for minor. X stands for any root note, because the shapes move up and down the neck. Click a box to hear it.</p>
+  </header>
+
+  <div class="panel">
+  <section class="controls" aria-label="Display settings">
+    <div class="grp"><h2 class="lab">Root on string</h2><div class="seg" id="strs" role="group" aria-label="Root string"></div></div>
+    <div class="grp"><h2 class="lab">Show</h2><div class="seg" id="views" role="group" aria-label="Steps shown"></div></div>
+  </section>
+  <ul class="legend">
+    <li><span class="sw root"></span>1: root</li>
+    <li><span class="sw tri"></span>3 and 5</li>
+    <li><span class="sw c3"></span>♭3: minor third</li>
+    <li><span class="sw ghost"></span>A note still to come, or where the 3 was</li>
+    <li><span class="xmark">×</span>String not played</li>
+  </ul>
+  </div>
+
+  <section class="part" aria-labelledby="part-recipe">
+    <div class="part-head">
+      <h2 id="part-recipe">The recipe on one string</h2>
+      <p>Count frets up from the root along a single string: the 3 is four frets higher, the 5 is seven frets higher. For minor, the 3 sits one fret lower. Every shape on this site is these same distances folded across the strings.</p>
+    </div>
+    <div id="recipe" class="cards recipe"></div>
+  </section>
+
+  <section class="part" aria-labelledby="part-shapes">
+    <div class="part-head">
+      <h2 id="part-shapes">Building the shapes</h2>
+      <p>The three shapes the other pages start from. Read each row from left to right.</p>
+    </div>
+    <div id="bands" class="bands"></div>
+  </section>
+
+  <p class="foot" id="foot"></p>
+</main>
+
+<script>
+// ---- Settings you can change ------------------------------------------------
+const TUNING = [40, 45, 50, 55, 59, 64];      // open strings as MIDI numbers, low E to high e (standard tuning)
+const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
+const MIN_ROWS = 4;                            // the fewest frets drawn in a box (a box grows by itself when a shape needs more)
+const RECIPE_ROOT = 48;                        // the root played when you click a recipe box, as a MIDI number (48 = C)
+// The build-up steps, left to right. keep = which notes of the major shape are already there (null = all of them),
+// fresh = the note that is new in this step (it pops in), chord = the shape used: 'maj' or 'm'.
+const STEPS = [
+  { name: 'Roots', chord: 'maj', keep: ['1'],      fresh: '1', how: 'Find every root' },
+  { name: 'X<sup>5</sup>', chord: 'maj', keep: ['1', '5'], fresh: '5', how: 'Add the 5: a power chord' },
+  { name: 'X',     chord: 'maj', keep: null,       fresh: '3', how: 'Add the 3: major' },
+  { name: 'X<span class="c3">m</span>', chord: 'm', keep: null, fresh: null, how: '' }   // the text is worked out: 3 → ♭3 (string)
+];
+// The shapes. root = string with the lowest root (0 = low E). Frets are counted from the root fret:
+// 0 = the root fret, 1 = one fret higher, null = string not played.
+// barre = [from string, to string] laid flat across the root fret, or null.
+// The numbers in the dots (1, 3, 5) are worked out from the frets, so only the frets need changing.
+const SHAPES = [
+  { root: 0, title: 'Root on the E string', note: 'The E shape, a barre chord on all six strings. It has three roots (low E, D and high e strings), two 5s and a single 3, on the G string. That one note decides everything: lower it one fret, onto the barre, and the chord is minor.',
+    play: 5,   // the fret used when you click to listen (5 = A)
+    chords: {
+      maj: { frets: [0, 2, 2, 1, 0, 0],       barre: [0, 5] },
+      m:   { frets: [0, 2, 2, 0, 0, 0],       barre: [0, 5] }
+    } },
+  { root: 1, title: 'Root on the A string', note: 'The A shape. Two roots (A and G strings), two 5s, and the 3 on the B string. One fret lower gives minor. The low E string is not played.',
+    play: 3,   // 3 = C
+    chords: {
+      maj: { frets: [null, 0, 2, 2, 2, 0],    barre: [1, 5] },
+      m:   { frets: [null, 0, 2, 2, 1, 0],    barre: [1, 5] }
+    } },
+  { root: 2, title: 'Root on the D string', note: 'The D shape on the four high strings. Two roots (D and B strings), one 5, and the 3 on the high e string. One fret lower gives minor. The low E and A strings are not played.',
+    play: 5,   // 5 = G
+    chords: {
+      maj: { frets: [null, null, 0, 2, 3, 2], barre: null },
+      m:   { frets: [null, null, 0, 2, 3, 1], barre: null }
+    } }
+];
+// -----------------------------------------------------------------------------
+
+// semitones above the root -> degree, and the colour a changed note gets
+const DEGREES = { 0: '1', 3: '♭3', 4: '3', 7: '5' };
+const DEG_COLOUR = { '♭3': 'c3' };
+const NOTE_NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+const $ = id => document.getElementById(id);
+const state = { str: 'all', view: 'steps' };
+
+// degree of the note on string s, fret f (counted from the root fret), e.g. '♭3'
+const degreeOf = (shape, s, f) => DEGREES[(((TUNING[s] + f - TUNING[shape.root]) % 12) + 12) % 12] || '?';
+
+// Chord box geometry (svg units)
+const SG = 22, FH = 30, LEFT = 26, TOPY = 26, R = 9.5;
+const BOX_W = LEFT + 5 * SG + 16;
+const xs = s => LEFT + s * SG;
+function windowOf(shape) {
+  const all = Object.values(shape.chords).flatMap(c => c.frets).filter(f => f !== null);
+  const lo = Math.min(...all);
+  return [lo, Math.max(lo + MIN_ROWS - 1, ...all)];
+}
+const dot = (x, y, d, wrap) => {
+  const isRoot = d === '1', fill = isRoot ? 'f-root' : DEG_COLOUR[d] ? 'f-' + DEG_COLOUR[d] : 'f-tri';
+  return `<g${wrap || ''}><circle class="cb-dot ${fill}" cx="${x}" cy="${y}" r="${R}"/><text class="cb-txt${isRoot ? ' root' : ''}" x="${x}" y="${y}" dy=".35em">${d}</text></g>`;
+};
+
+function boxSVG(shape, step) {
+  const ch = shape.chords[step.chord], maj = shape.chords.maj;
+  const [lo, hi] = windowOf(shape), NROWS = hi - lo + 1, BOX_H = TOPY + NROWS * FH + 8;
+  const fy = f => TOPY + (f - lo + 0.5) * FH;      // middle of the fret space
+  let s = `<svg class="cb" viewBox="0 0 ${BOX_W} ${BOX_H}" aria-hidden="true">`;
+  s += `<rect class="cb-wood" x="${LEFT - 8}" y="${TOPY}" width="${5 * SG + 16}" height="${NROWS * FH}" rx="2"/>`;
+  for (let r = 0; r <= NROWS; r++) s += `<line class="cb-wire" x1="${LEFT}" x2="${xs(5)}" y1="${TOPY + r * FH}" y2="${TOPY + r * FH}"/>`;
+  for (let k = 0; k < 6; k++) {
+    s += `<line class="cb-string" x1="${xs(k)}" x2="${xs(k)}" y1="${TOPY}" y2="${TOPY + NROWS * FH}" style="stroke-width:${(2.2 - k * 0.25).toFixed(2)}"/>`;
+    if (ch.frets[k] === null) s += `<text class="cb-x" x="${xs(k)}" y="${TOPY - 9}">×</text>`;
+  }
+  s += `<text class="cb-fret" x="${LEFT - 11}" y="${fy(0)}" dy=".35em">X</text>`;   // marks the root fret
+  if (ch.barre && !step.keep) s += `<line class="cb-barre" x1="${xs(ch.barre[0])}" x2="${xs(ch.barre[1])}" y1="${fy(0)}" y2="${fy(0)}"/>`;
+  // minor: a coloured line from where the 3 sat in the major shape, and a dashed ring there
+  const changed = k => ch.frets[k] !== null && ch.frets[k] !== maj.frets[k];
+  ch.frets.forEach((f, k) => {
+    if (!changed(k)) return;
+    s += `<line class="cb-move s-c3" x1="${xs(k)}" x2="${xs(k)}" y1="${fy(maj.frets[k])}" y2="${fy(f)}"/>`;
+    s += `<circle class="cb-ghost" cx="${xs(k)}" cy="${fy(maj.frets[k])}" r="${R - 1}"/>`;
+  });
+  ch.frets.forEach((f, k) => {
+    if (f === null) return;
+    const d = degreeOf(shape, k, f);
+    if (step.keep && !step.keep.includes(d)) { s += `<circle class="cb-ghost" cx="${xs(k)}" cy="${fy(f)}" r="${R - 1}"/>`; return; }   // still to come
+    // the animations are in site.css: cb-mv slides in from the old place, cb-new pops in
+    const wrap = changed(k) ? ` class="cb-mv" style="--dy:${fy(maj.frets[k]) - fy(f)}px"` : d === step.fresh ? ' class="cb-new"' : '';
+    s += dot(xs(k), fy(f), d, wrap);
+  });
+  return s + '</svg>';
+}
+
+// The recipe: one string lying on its side, the root on the left, frets counted to the right.
+function rulerSVG(minor) {
+  const CW = 40, L = 14, Y = 34, x = n => L + (n + 0.5) * CW, W = L * 2 + 8 * CW;
+  const third = minor ? 3 : 4;
+  let s = `<svg class="cb ruler" viewBox="0 0 ${W} 96" aria-hidden="true">`;
+  s += `<rect class="cb-wood" x="${L}" y="14" width="${8 * CW}" height="40" rx="2"/>`;
+  for (let i = 0; i <= 8; i++) s += `<line class="cb-wire" x1="${L + i * CW}" x2="${L + i * CW}" y1="14" y2="54"/>`;
+  s += `<line class="cb-string" x1="${L}" x2="${L + 8 * CW}" y1="${Y}" y2="${Y}" style="stroke-width:2"/>`;
+  if (minor) {
+    s += `<line class="cb-move s-c3" x1="${x(4)}" x2="${x(3)}" y1="${Y}" y2="${Y}"/><circle class="cb-ghost" cx="${x(4)}" cy="${Y}" r="${R - 1}"/>`;
+  }
+  s += dot(x(0), Y, '1', '') + dot(x(third), Y, minor ? '♭3' : '3', minor ? ` class="cb-mv" style="--dx:${CW}px"` : ' class="cb-new"') + dot(x(7), Y, '5', '');
+  const span = (a, b) => `<path class="cb-span" d="M${x(a)} 62v6H${x(b)}v-6"/><text class="cb-spantxt" x="${(x(a) + x(b)) / 2}" y="84">${b - a} frets</text>`;
+  return s + span(0, third) + span(third, 7) + '</svg>';
+}
+
+// every box's notes, so a click can play them (filled in by render)
+let sounds = [];
+function card(nameHTML, svg, how, label, pitches, gap) {
+  const i = sounds.push({ pitches, gap }) - 1;
+  return `<button type="button" class="card" data-play="${i}" aria-label="Play ${label}"><span class="cname">${nameHTML}</span>${svg}<span class="how">${how}</span></button>`;
+}
+
+function render() {
+  document.querySelectorAll('[data-act]').forEach(b => {
+    b.setAttribute('aria-pressed', String(String(state[b.dataset.act]) === b.dataset.v));
+  });
+  sounds = [];
+  $('recipe').innerHTML =
+    card('X', rulerSVG(false), '1 · 3 · 5<br>major: 4 frets, then 3', 'the notes of a major chord one after another', [0, 4, 7].map(n => RECIPE_ROOT + n), 0.34)
+    + card('X<span class="c3">m</span>', rulerSVG(true), '1 · ♭3 · 5<br>minor: 3 frets, then 4', 'the notes of a minor chord one after another', [0, 3, 7].map(n => RECIPE_ROOT + n), 0.34);
+  $('bands').innerHTML = SHAPES.map((shape, i) => {
+    if (state.str !== 'all' && +state.str !== i) return '';
+    const steps = STEPS.filter(st => state.view === 'steps' || !st.keep);
+    const cards = steps.map((st, n) => {
+      const ch = shape.chords[st.chord];
+      const shown = ch.frets.map((f, k) => f === null ? null : degreeOf(shape, k, f)).map(d => d !== null && st.keep && !st.keep.includes(d) ? null : d);
+      const degs = [...new Set(shown.filter(d => d !== null))].sort((a, b) => a.replace('♭', '') - b.replace('♭', '')).join(' · ');
+      let how = st.how;
+      if (st.chord === 'm') how = ch.frets.map((f, k) => f !== shape.chords.maj.frets[k] ? `3 → ♭3 (${STRING_NAMES[k]}): minor` : '').filter(Boolean).join('<br>');
+      const pitches = ch.frets.map((f, k) => shown[k] === null ? null : TUNING[k] + shape.play + f).filter(m => m !== null);
+      const no = state.view === 'steps' ? `<span class="stepno">Step ${n + 1}</span>` : '';
+      return card(no + st.name, boxSVG(shape, st), `${how}<br>${degs}`, `${st.how || 'the minor chord'}, root on the ${STRING_NAMES[shape.root]} string`, pitches, 0.05);
+    }).join('');
+    return `<section class="band" aria-label="${shape.title}"><div class="band-head"><h3>${shape.title}</h3><p>${shape.note}</p></div><div class="cards">${cards}</div></section>`;
+  }).join('');
+  $('foot').textContent = 'Standard tuning (E A D G B e). The X next to each box marks the root fret. Clicking a box plays it with the root on fret '
+    + SHAPES.map(sh => `${sh.play} of the ${STRING_NAMES[sh.root]} string (${NOTE_NAMES[(TUNING[sh.root] + sh.play) % 12]})`).join(', ')
+    + '. These are the E, A and D shapes of the CAGED system. The seventh, sus, 6 and add9 pages all start from them and move one or two notes.';
+}
+
+// ---- Sound ---------------------------------------------------------------
+let ac = null;
+function pluck(midi, t0, dur) {
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+  osc.type = 'sawtooth'; osc.frequency.value = f;
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(Math.min(f * 9, 7000), t0);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.6, 320), t0 + 0.6);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(0.16, t0 + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+  osc.connect(lp); lp.connect(g); g.connect(ac.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.05);
+}
+function playNotes(o) {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    const t = ac.currentTime + 0.03;
+    o.pitches.forEach((m, i) => pluck(m, t + i * o.gap, 2.4));
+  } catch (e) { /* audio not available */ }
+}
+
+// ---- Controls --------------------------------------------------------------
+const chip = (act, v, label, sub) =>
+  `<button type="button" class="chip" data-act="${act}" data-v="${v}" aria-pressed="false">${label}${sub ? `<small>${sub}</small>` : ''}</button>`;
+$('strs').innerHTML = chip('str', 'all', 'All', 'E · A · D') + SHAPES.map((sh, i) => chip('str', i, STRING_NAMES[sh.root], `${6 - sh.root}th string`)).join('');
+$('views').innerHTML = chip('view', 'steps', 'Step by step', 'roots · 5 · 3 · minor') + chip('view', 'chords', 'Chords only', 'major and minor');
+
+document.addEventListener('click', e => {
+  const p = e.target.closest('[data-play]');
+  if (p) { const o = sounds[+p.dataset.play]; if (o) playNotes(o); return; }
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  state[b.dataset.act] = b.dataset.v;
+  render();
+});
+
+render();
+</script>
+
+</body></html>
