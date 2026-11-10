@@ -1,102 +1,34 @@
-<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Triad Atlas</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Triad Atlas · guitar triads and chord shapes</title>
+<meta name="description" content="Interactive guitar fretboard: every major, minor, diminished and augmented triad shape and inversion, with the scale it comes from.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%23211915'/%3E%3Cpath d='M7 20.5 14 13l7-5.5' fill='none' stroke='%23BDB4A3' stroke-width='1.6'/%3E%3Ccircle cx='7' cy='20.5' r='3.6' fill='%23FF3B3B'/%3E%3Ccircle cx='14' cy='13' r='3.6' fill='%23F4ECDA'/%3E%3Ccircle cx='21' cy='7.5' r='3.6' fill='%23F4ECDA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). site.js = the top menu and the light/dark button. -->
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
 <style>
-/* Layout: a pale lesson sheet with two dark rosewood fretboards stacked under the controls.
-   Top board: the triad shapes. Bottom board: the scale they belong to, with the triad notes lifted out. */
-:root{
-  --bg:#E8EEEC; --surface:#F7F9F8; --ink:#12201E; --muted:#51625F; --line:#C4D0CD;
-  --chip:#DCE6E3; --accent:#0B6764; --accent-ink:#FFFFFF;
-  --board:#231B17; --wood:#33271F; --wire:#A9B0B3; --nut:#E3DCCB; --string:#D6CFBF;
-  --pearl:#CFC6B0; --board-ink:#BDB4A3;
-  --inv0:#F2A93B; --inv1:#4FC0B0; --inv2:#9D96F2; --on-inv:#1A140F;
-  --scale:#5B4A3E; --scale-ink:#EDE3D2; --tri:#F4ECDA; --root:#FF3B3B;
-  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
-  --font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;
-  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
-    --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
-  --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
-  color-scheme:dark;
-}
-
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font:15px/1.5 var(--font-body);
-  padding-block:28px 56px;
-  padding-left:max(16px, env(safe-area-inset-left, 0px));
-  padding-right:max(16px, env(safe-area-inset-right, 0px));
-}
-button{font:inherit; color:inherit}
-:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
-
-.sheet{max-width:1120px; margin-inline:auto; display:grid; gap:26px}
-body.wide .sheet{max-width:1600px}
-.top{display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:16px 32px}
-.lead{flex:1 1 420px; min-width:0}
-.widthgrp{flex:0 0 auto}
-h1{
-  margin:0 0 8px; font:700 clamp(32px,5.5vw,48px)/1.05 var(--font-display);
-  letter-spacing:-0.02em; text-wrap:balance;
-}
-.intro{margin:0; max-width:64ch; color:var(--muted)}
-.nav{display:flex; flex-wrap:wrap; gap:6px 18px; margin:0 0 10px; font:600 12px/1.2 var(--font-mono); letter-spacing:.06em; text-transform:uppercase}
-.nav a{color:var(--accent); text-decoration:none; padding-bottom:2px; border-bottom:2px solid transparent}
-.nav a:hover{border-bottom-color:currentColor}
-.nav a[aria-current="page"]{color:var(--ink); border-bottom-color:var(--accent)}
-h2{margin:0}
-
-/* controls */
-.controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px 28px}
-.grp{min-width:0}
-.grp.wide{grid-column:1/-1}
-.lab{
-  margin-bottom:8px; font:600 11px/1.2 var(--font-mono);
-  letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
-}
-.lab em{font-style:normal; text-transform:none; letter-spacing:0; opacity:.85}
-.roots{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:6px}
-.seg{display:flex; flex-wrap:wrap; gap:6px}
-.chip{
-  border:1px solid var(--line); background:var(--chip); border-radius:6px;
-  padding:8px 10px; min-height:42px; font-weight:600; font-size:14px; cursor:pointer;
-  text-align:center; line-height:1.2;
-}
-.chip small{display:block; margin-top:2px; font:400 11px/1.2 var(--font-mono); opacity:.8}
-.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
-.roots .chip{padding:8px 2px; font-size:13px}
+/* Only this page: the two long fretboards and their controls. Everything shared is in site.css. */
+.roots{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px; padding:4px; background:var(--chip); border-radius:13px}
+.roots .chip{padding:7px 2px; font-size:13px}
 .roots .chip small{font-size:9.5px; letter-spacing:-.02em}
-.seg .chip{flex:1 1 auto}
 
 /* stages */
 .stage{display:grid; gap:12px}
 .stage-head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:10px 16px}
-.stage-head h2{font:700 clamp(22px,3.4vw,30px)/1.15 var(--font-display); letter-spacing:-.01em}
-.now{margin:2px 0 0; color:var(--muted); font-size:14px; max-width:70ch}
+.stage-head > div{min-width:0}
+.stage-head h2{font:700 clamp(24px,3.6vw,34px)/1.15 var(--font-display); letter-spacing:-.02em}
+.now{margin:4px 0 0; color:var(--muted); font-size:14.5px; max-width:70ch}
 .play{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
 .step{display:flex; align-items:center; gap:6px; margin-right:6px}
 #shape-count{font:500 13px/1.2 var(--font-mono); color:var(--muted); min-width:104px; text-align:center}
-.btn{
-  border:1px solid var(--accent); background:transparent; color:var(--accent);
-  border-radius:6px; padding:8px 14px; min-height:42px; font-weight:600; cursor:pointer;
-}
 .btn.sq{min-width:42px; padding:8px 0; font-size:20px; line-height:1}
-.btn:hover{background:var(--accent); color:var(--accent-ink)}
-.btn:disabled{opacity:.4; cursor:default}
-.btn:disabled:hover{background:transparent; color:var(--accent)}
-.board{background:var(--board); border:1px solid var(--line); border-radius:10px; overflow-x:auto; padding:6px 4px}
-.legend{display:flex; flex-wrap:wrap; gap:6px 20px; margin:0; padding:0; list-style:none; color:var(--muted); font-size:13px}
-.legend li{display:flex; align-items:center; gap:7px}
-.sw{width:14px; height:14px; border-radius:50%; border:1px solid var(--ink); display:inline-block; flex:none}
+.board{background:linear-gradient(180deg, var(--board-hi), var(--board)); border:1px solid var(--line); border-radius:16px; overflow-x:auto; padding:8px 4px; box-shadow:var(--shadow)}
 .sw.s0{background:var(--inv0)} .sw.s1{background:var(--inv1)} .sw.s2{background:var(--inv2)}
 .sw.ring{background:transparent; border:3px solid var(--root)}
 .sw.halo{width:10px; height:10px; margin:0 3px; border:0; background:var(--muted); box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px var(--muted)}
@@ -104,7 +36,6 @@ h2{margin:0}
 .sw.scl{background:var(--scale); border-color:var(--board)}
 .sw.tri{background:var(--tri); border-color:var(--board)}
 .sw.shp{width:10px; height:10px; margin:0 3px; border:0; background:var(--tri); box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--inv0)}
-.xmark{font:600 14px var(--font-mono); width:14px; text-align:center}
 
 /* fretboard svg */
 .fb{display:block; width:100%; min-width:800px; height:auto}
@@ -131,24 +62,24 @@ h2{margin:0}
 .l0{stroke:var(--inv0)} .l1{stroke:var(--inv1)} .l2{stroke:var(--inv2)}
 .scl{fill:var(--scale)} .tri{fill:var(--tri)}
 
-.foot{margin:0; color:var(--muted); font-size:13px; max-width:80ch}
-
 @media (max-width:640px){
   .roots{grid-template-columns:repeat(6,minmax(0,1fr))}
   .roots .chip small{font-size:10px}
+  .play{width:100%}
+  .play .btn:not(.sq){flex:1 1 auto}
 }
 </style>
+</head>
+<body>
 
 <main class="sheet">
-  <header class="top">
-    <div class="lead">
-    <nav class="nav" aria-label="Pages"><a href="./" aria-current="page">Triad Atlas</a><a href="seventh-chords.html">Seventh chords</a><a href="sus-chords.html">Sus chords</a></nav>
+  <header class="hero">
+    <p class="eyebrow">Fretboard map</p>
     <h1>Triad Atlas</h1>
     <p class="intro">Pick a chord, one or more sets of neighbouring strings and an inversion. The top fretboard shows the triad shapes. The bottom one shows the scale they come from, with the triad notes lifted out of it. Press Play to hear the selected shape.</p>
-    </div>
-    <div class="grp widthgrp"><h2 class="lab">Display</h2><div class="seg" id="widths" role="group" aria-label="Page width"></div></div>
   </header>
 
+  <div class="panel">
   <section class="controls" aria-label="Chord settings">
     <div class="grp wide"><h2 class="lab">Root note</h2><div class="roots" id="roots" role="group" aria-label="Root note"></div></div>
     <div class="grp"><h2 class="lab">Chord type</h2><div class="seg" id="quals" role="group" aria-label="Chord type"></div></div>
@@ -156,8 +87,10 @@ h2{margin:0}
     <div class="grp"><h2 class="lab">Strings, low to high <em>(pick one or more)</em></h2><div class="seg" id="sets" role="group" aria-label="String sets"></div></div>
     <div class="grp"><h2 class="lab">Inversion</h2><div class="seg" id="invs" role="group" aria-label="Inversion"></div></div>
     <div class="grp"><h2 class="lab">Labels</h2><div class="seg" id="labels" role="group" aria-label="Dot labels"></div></div>
+    <div class="grp"><h2 class="lab">Display</h2><div class="seg" id="widths" role="group" aria-label="Page width"></div></div>
     <div class="grp wide"><h2 class="lab">View</h2><div class="seg" id="views" role="group" aria-label="Fretboard view"></div></div>
   </section>
+  </div>
 
   <section class="stage" aria-label="Triad fretboard">
     <div class="stage-head">

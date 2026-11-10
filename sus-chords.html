@@ -1,132 +1,33 @@
-<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sus Chords · Triad Atlas</title>
+<meta name="description" content="Sus2 and sus4 guitar chords built from the major shape: full shapes and three-string triads in every inversion.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%23211915'/%3E%3Cpath d='M7 20.5 14 13l7-5.5' fill='none' stroke='%23BDB4A3' stroke-width='1.6'/%3E%3Ccircle cx='7' cy='20.5' r='3.6' fill='%23FF3B3B'/%3E%3Ccircle cx='14' cy='13' r='3.6' fill='%23F4ECDA'/%3E%3Ccircle cx='21' cy='7.5' r='3.6' fill='%23F4ECDA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). site.js = the top menu and the light/dark button. -->
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
 <style>
-/* Layout: the same pale lesson sheet as the seventh chords page, in two parts.
-   Part 1: one band per root string (E, A, D) with the major barre shape and its sus2 and sus4.
-   Part 2: one band per three-string set, one row per inversion: the major triad and its sus2 and sus4. */
-:root{
-  --bg:#E8EEEC; --surface:#F7F9F8; --ink:#12201E; --muted:#51625F; --line:#C4D0CD;
-  --chip:#DCE6E3; --accent:#0B6764; --accent-ink:#FFFFFF;
-  --board:#231B17; --wood:#33271F; --wire:#A9B0B3; --string:#D6CFBF; --board-ink:#BDB4A3;
-  --tri:#F4ECDA; --on-dot:#1A140F; --root:#FF3B3B; --on-root:#FFFFFF;
-  --sus:#B58CFF;      /* the 2 and the 4 (the notes that replace the 3) */
-  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
-  --font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;
-  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
-    --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0E1615; --surface:#16201F; --ink:#E2EBE9; --muted:#93A6A2; --line:#2A3B38;
-  --chip:#1E2D2B; --accent:#4FC0B0; --accent-ink:#06201D; --board:#1A1411; --wood:#2B211B;
-  color-scheme:dark;
-}
-
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font:15px/1.5 var(--font-body);
-  padding-block:28px 56px;
-  padding-left:max(16px, env(safe-area-inset-left, 0px));
-  padding-right:max(16px, env(safe-area-inset-right, 0px));
-}
-button{font:inherit; color:inherit}
-:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
-
-.sheet{max-width:1120px; margin-inline:auto; display:grid; gap:26px}
-.nav{display:flex; flex-wrap:wrap; gap:6px 18px; margin:0 0 10px; font:600 12px/1.2 var(--font-mono); letter-spacing:.06em; text-transform:uppercase}
-.nav a{color:var(--accent); text-decoration:none; padding-bottom:2px; border-bottom:2px solid transparent}
-.nav a:hover{border-bottom-color:currentColor}
-.nav a[aria-current="page"]{color:var(--ink); border-bottom-color:var(--accent)}
-h1{
-  margin:0 0 8px; font:700 clamp(32px,5.5vw,48px)/1.05 var(--font-display);
-  letter-spacing:-0.02em; text-wrap:balance;
-}
-.intro{margin:0; max-width:70ch; color:var(--muted)}
-h2,h3{margin:0}
-
-/* controls */
-.controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px 28px}
-.grp{min-width:0}
-.lab{
-  margin-bottom:8px; font:600 11px/1.2 var(--font-mono);
-  letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
-}
-.seg{display:flex; flex-wrap:wrap; gap:6px}
-.chip{
-  flex:1 1 auto; border:1px solid var(--line); background:var(--chip); border-radius:6px;
-  padding:8px 10px; min-height:42px; font-weight:600; font-size:14px; cursor:pointer;
-  text-align:center; line-height:1.2;
-}
-.chip small{display:block; margin-top:2px; font:400 11px/1.2 var(--font-mono); opacity:.8}
-.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
-
-/* legend */
-.legend{display:flex; flex-wrap:wrap; gap:6px 20px; margin:0; padding:0; list-style:none; color:var(--muted); font-size:13px}
-.legend li{display:flex; align-items:center; gap:7px}
-.sw{width:14px; height:14px; border-radius:50%; border:1px solid var(--ink); display:inline-block; flex:none}
-.sw.root{background:var(--root)} .sw.tri{background:var(--tri)} .sw.sus{background:var(--sus)}
-.sw.ghost{background:transparent; border:1.5px dashed var(--muted)}
-.xmark{font:600 14px var(--font-mono); width:14px; text-align:center}
-
-/* the two parts of the page */
-.part{display:grid; gap:20px; padding-top:22px; border-top:1px solid var(--line)}
-.part-head h2{font:700 clamp(26px,4vw,36px)/1.1 var(--font-display); letter-spacing:-.015em}
-.part-head p{margin:4px 0 0; color:var(--muted); max-width:75ch}
-
-/* bands: explanation on the left, chord boxes on the right (on wide screens) */
-.bands{display:grid; gap:34px}
-.band{display:grid; gap:12px}
+/* Only this page: on wide screens the explanation sits on the left and the three chord boxes on the right. */
+.cards{max-width:640px}
 @media (min-width:1000px){.band{grid-template-columns:minmax(0,300px) minmax(0,1fr); gap:28px; align-items:start}}
-.band-head h3{font:700 clamp(21px,3.2vw,28px)/1.15 var(--font-display); letter-spacing:-.01em}
-.band-head p{margin:2px 0 0; color:var(--muted); font-size:14px; max-width:75ch}
-.cards{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-width:640px}
-.rowlab{grid-column:1/-1; margin:8px 0 -4px; font:600 11px/1.2 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
-.rowlab:first-child{margin-top:0}
-.card{
-  display:flex; flex-direction:column; align-items:stretch; gap:6px; margin:0;
-  background:var(--board); border:1px solid var(--line); border-radius:10px;
-  padding:10px 8px 10px; cursor:pointer; text-align:center;
-}
-.card:hover{border-color:var(--accent)}
-.cname{color:var(--tri); font:600 22px/1.2 var(--font-body)}
-.cname sup{font-size:13px; vertical-align:9px; margin-left:1px}
-.cname span{border-radius:4px; padding:0 2px}
-.cname .sus{background:var(--sus); color:var(--on-dot)}
-.how{color:var(--board-ink); font:400 11.5px/1.4 var(--font-mono)}
-
-/* chord box svg */
-.cb{display:block; width:100%; max-width:170px; height:auto; margin-inline:auto}
-.cb-wood{fill:var(--wood)}
-.cb-wire{stroke:var(--wire); stroke-width:1.6; opacity:.85}
-.cb-string{stroke:var(--string)}
-.cb-x{fill:var(--board-ink); font:400 15px var(--font-mono); text-anchor:middle}
-.cb-fret{fill:var(--board-ink); font:400 10px var(--font-mono); text-anchor:end; opacity:.6}
-.cb-barre{stroke:var(--tri); stroke-width:10; stroke-linecap:round; opacity:.22}
-.cb-move{stroke-width:5; stroke-linecap:round; opacity:.75}
-.cb-ghost{fill:none; stroke:var(--board-ink); stroke-width:1.3; stroke-dasharray:3 2.5; opacity:.8}
-.cb-dot{stroke:var(--board); stroke-width:1.2}
-.cb-txt{fill:var(--on-dot); font:700 10.5px var(--font-mono); text-anchor:middle; pointer-events:none}
-.cb-txt.root{fill:var(--on-root)}
-.f-tri{fill:var(--tri)} .f-root{fill:var(--root)} .f-sus{fill:var(--sus)}
-.s-tri{stroke:var(--tri)} .s-sus{stroke:var(--sus)}
-
-.foot{margin:0; color:var(--muted); font-size:13px; max-width:80ch}
 </style>
+</head>
+<body>
 
 <main class="sheet">
-  <header>
-    <nav class="nav" aria-label="Pages"><a href="./">Triad Atlas</a><a href="seventh-chords.html">Seventh chords</a><a href="sus-chords.html" aria-current="page">Sus chords</a></nav>
+  <header class="hero">
+    <p class="eyebrow">Built from the major shape</p>
     <h1>Suspended Chords</h1>
     <p class="intro">A sus chord has no 3. The 2 (sus2) or the 4 (sus4) takes its place, so the chord sounds neither major nor minor, open and waiting to move on. Start with a major shape and move the 3: two frets down gives the 2, one fret up gives the 4. X stands for any root note, because the shapes move up and down the neck. Click a chord box to hear it.</p>
   </header>
 
+  <div class="panel">
   <section class="controls" aria-label="Display settings">
     <div class="grp"><h2 class="lab">Numbers in the dots</h2><div class="seg" id="labels" role="group" aria-label="Dot labels"></div></div>
     <div class="grp"><h2 class="lab">Moves from the major shape</h2><div class="seg" id="moves" role="group" aria-label="Show moves"></div></div>
@@ -139,6 +40,7 @@ h2,h3{margin:0}
     <li><span class="sw ghost"></span>Where the note was in the major shape</li>
     <li><span class="xmark">×</span>String not played</li>
   </ul>
+  </div>
 
   <section class="part" aria-labelledby="part-full">
     <div class="part-head">
@@ -269,9 +171,12 @@ function boxSVG(o) {
     if (f === null) return;
     const d = degreeOf(o.root, k, f), isRoot = d === '1';
     const fill = isRoot ? 'f-root' : DEG_COLOUR[d] ? 'f-' + DEG_COLOUR[d] : 'f-tri';
+    // a changed note is wrapped in a group that slides in from its old place (the animation is in site.css)
+    s += state.moves && changed(k) ? `<g class="cb-mv" style="--dy:${fy(o.from[k]) - fy(f)}px">` : '<g>';
     s += `<circle class="cb-dot ${fill}" cx="${xs(k)}" cy="${fy(f)}" r="${R}"/>`;
     const show = state.labels === 'all' || isRoot || DEG_COLOUR[d] || changed(k);
     if (show) s += `<text class="cb-txt${isRoot ? ' root' : ''}" x="${xs(k)}" y="${fy(f)}" dy=".35em">${d}</text>`;
+    s += '</g>';
   });
   return s + '</svg>';
 }
