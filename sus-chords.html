@@ -9,8 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). site.js = the top menu and the light/dark button. -->
+<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). lang-sk.js = all Slovak texts. site.js = the top menu, the EN/SK switch and the light/dark button. -->
 <link rel="stylesheet" href="site.css">
+<script src="lang-sk.js"></script>
 <script src="site.js"></script>
 <style>
 /* Only this page: on wide screens the explanation sits on the left and the three chord boxes on the right. */
@@ -186,7 +187,7 @@ function moveLines(o) {
   const out = [];
   o.frets.forEach((f, k) => {
     const m = o.from[k];
-    if (f === null && m !== null) out.push(`mute ${STRING_NAMES[k]}`);
+    if (f === null && m !== null) out.push(T('mute {s}', { s: STRING_NAMES[k] }));
     else if (f !== null && m !== null && f !== m) out.push(`${degreeOf(o.root, k, m)} → ${degreeOf(o.root, k, f)} (${STRING_NAMES[k]})`);
   });
   return out;
@@ -200,7 +201,7 @@ const plainName = t => 'X' + t.parts.map(p => p[0]).join('');
 let sounds = [];
 function card(t, o, how, label, pitches) {
   const i = sounds.push(pitches) - 1;
-  return `<button type="button" class="card" data-play="${i}" aria-label="Play ${label}: ${degreeList(o).join(' ')}">
+  return `<button type="button" class="card" data-play="${i}" aria-label="${label}">
     <span class="cname">${nameHTML(t)}</span>${boxSVG(o)}<span class="how">${how}</span></button>`;
 }
 const fretsOf = row => CHORD_TYPES.flatMap(t => row.chords[t.key].frets).filter(f => f !== null);
@@ -211,11 +212,11 @@ function fullBand(shape, i) {
   const cards = CHORD_TYPES.map(t => {
     const ch = shape.chords[t.key];
     const o = { frets: ch.frets, from: shape.chords.maj.frets, barre: ch.barre, root: shape.root, win };
-    const how = t.key === 'maj' ? 'Starting shape<br>1 · 3 · 5' : moveLines(o).join('<br>');
+    const how = t.key === 'maj' ? T('Starting shape') + '<br>1 · 3 · 5' : moveLines(o).join('<br>');
     const pitches = ch.frets.map((f, k) => f === null ? null : TUNING[k] + shape.play + f).filter(m => m !== null);
-    return card(t, o, how, `${plainName(t)}, root on the ${STRING_NAMES[shape.root]} string`, pitches);
+    return card(t, o, how, T('Play {name}, root on the {s} string: {deg}', { name: plainName(t), s: STRING_NAMES[shape.root], deg: degreeList(o).join(' ') }), pitches);
   }).join('');
-  return `<section class="band" aria-label="${shape.title}"><div class="band-head"><h3>${shape.title}</h3><p>${shape.note}</p></div><div class="cards">${cards}</div></section>`;
+  return `<section class="band" aria-label="${T(shape.title)}"><div class="band-head"><h3>${T(shape.title)}</h3><p>${T(shape.note)}</p></div><div class="cards">${cards}</div></section>`;
 }
 
 function triadBand(strs) {
@@ -229,13 +230,14 @@ function triadBand(strs) {
       const ch = row.chords[t.key];
       const o = { frets: ch.frets, from: row.chords.maj.frets, barre: null, root: row.root, win };
       const stack = degreeList(o).join(' · ');
-      const how = t.key === 'maj' ? `Starting shape<br>${stack}` : `${moveLines(o).join('<br>')}<br>${stack}`;
+      const how = t.key === 'maj' ? `${T('Starting shape')}<br>${stack}` : `${moveLines(o).join('<br>')}<br>${stack}`;
       const pitches = ch.frets.map((f, k) => f === null ? null : TUNING[k] + rootFret + f).filter(m => m !== null);
-      return card(t, o, how, `${plainName(t)}, ${INV_NAMES[inv].toLowerCase()} on strings ${setLabel(strs)}`, pitches);
+      return card(t, o, how, T('Play {name}, {inv} on strings {set}: {deg}', { name: plainName(t), inv: T(INV_NAMES[inv]).toLowerCase(), set: setLabel(strs), deg: degreeList(o).join(' ') }), pitches);
     }).join('');
-    return `<h4 class="rowlab">${INV_ROWS[inv]}</h4>${cards}`;
+    return `<h4 class="rowlab">${T(INV_ROWS[inv])}</h4>${cards}`;
   }).join('');
-  return `<section class="band" aria-label="Strings ${setLabel(strs)}"><div class="band-head"><h3>Strings ${setLabel(strs)}</h3><p>The ${setNotes(strs)} strings.</p></div><div class="cards">${rows}</div></section>`;
+  const title = T('Strings {set}', { set: setLabel(strs) });
+  return `<section class="band" aria-label="${title}"><div class="band-head"><h3>${title}</h3><p>${T('The {notes} strings.', { notes: setNotes(strs) })}</p></div><div class="cards">${rows}</div></section>`;
 }
 
 function render() {
@@ -246,9 +248,9 @@ function render() {
   sounds = [];
   $('bands').innerHTML = SHAPES.map((sh, i) => (state.str === 'all' || +state.str === i) ? fullBand(sh, i) : '').join('');
   $('tbands').innerHTML = STRING_SETS.map((st, i) => (state.set === 'all' || +state.set === i) ? triadBand(st) : '').join('');
-  $('foot').textContent = 'Standard tuning (E A D G B e). The X next to each box marks the fret of the root. Clicking a full shape plays it with the root on fret '
-    + SHAPES.map(sh => `${sh.play} of the ${STRING_NAMES[sh.root]} string (${NOTE_NAMES[(TUNING[sh.root] + sh.play) % 12]})`).join(', ')
-    + `. Clicking a triad plays it with ${NOTE_NAMES[TRIAD_PLAY_ROOT]} as the root. Good to know: a sus2 chord has the same three notes as the sus4 chord a fifth higher, for example Csus2 (C D G) and Gsus4 (G C D).`;
+  $('foot').textContent = T('Standard tuning (E A D G B e). The X next to each box marks the fret of the root. Clicking a full shape plays it with the root on fret {list}. Clicking a triad plays it with {note} as the root.',
+      { list: SHAPES.map(sh => T('{fret} of the {s} string ({note})', { fret: sh.play, s: STRING_NAMES[sh.root], note: NOTE_NAMES[(TUNING[sh.root] + sh.play) % 12] })).join(', '), note: NOTE_NAMES[TRIAD_PLAY_ROOT] })
+    + ' ' + T('Good to know: a sus2 chord has the same three notes as the sus4 chord a fifth higher, for example Csus2 (C D G) and Gsus4 (G C D).');
 }
 
 // ---- Sound ---------------------------------------------------------------
@@ -276,11 +278,12 @@ function playNotes(pitches) {
 }
 
 // ---- Controls --------------------------------------------------------------
+// label and sub are translated by T() when lang-sk.js knows them
 const chip = (act, v, label, sub) =>
-  `<button type="button" class="chip" data-act="${act}" data-v="${v}" aria-pressed="false">${label}${sub ? `<small>${sub}</small>` : ''}</button>`;
+  `<button type="button" class="chip" data-act="${act}" data-v="${v}" aria-pressed="false">${T(label)}${sub ? `<small>${T(sub)}</small>` : ''}</button>`;
 $('labels').innerHTML = chip('labels', 'all', 'All degrees', '1 · 2 · 3 · 4 · 5') + chip('labels', 'changes', 'Changes only', 'root + new notes');
 $('moves').innerHTML = chip('moves', 'on', 'Show', 'line from old spot') + chip('moves', 'off', 'Hide', 'just the shape');
-$('strs').innerHTML = chip('str', 'all', 'All', 'E · A · D') + SHAPES.map((sh, i) => chip('str', i, STRING_NAMES[sh.root], `${6 - sh.root}th string`)).join('');
+$('strs').innerHTML = chip('str', 'all', 'All', 'E · A · D') + SHAPES.map((sh, i) => chip('str', i, STRING_NAMES[sh.root], T('{n}th string', { n: 6 - sh.root }))).join('');
 $('sets').innerHTML = chip('set', 'all', 'All', 'four sets') + STRING_SETS.map((st, i) => chip('set', i, setLabel(st), setNotes(st))).join('');
 $('invs').innerHTML = chip('inv', 'all', 'All', 'three rows')
   + INV_NAMES.map((n, i) => chip('inv', i, n, ['bass 1', 'bass 3 → 2 / 4', 'bass 5'][i])).join('');

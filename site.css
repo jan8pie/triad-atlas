@@ -59,7 +59,7 @@ button{font:inherit; color:inherit}
 :focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 h1,h2,h3,h4{margin:0}
 
-/* ---- top bar: logo, page menu, light/dark button (filled in by site.js) ---- */
+/* ---- top bar: logo, page menu, EN/SK switch, light/dark button (filled in by site.js) ---- */
 .bar{
   position:sticky; top:0; z-index:20; border-bottom:1px solid var(--line);
   background:color-mix(in srgb, var(--bg) 86%, transparent);
@@ -85,6 +85,11 @@ body.wide .bar-in{max-width:1632px}
   border:1px solid var(--line); border-radius:50%; background:var(--surface); color:var(--ink);
 }
 .theme-btn:hover{border-color:var(--accent); color:var(--accent)}
+.lang{flex:none; margin-left:auto; display:flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:999px; background:var(--surface)}
+.lang button{border:0; background:none; cursor:pointer; color:var(--muted); font:600 12px/1 var(--font-mono); letter-spacing:.04em; padding:8px 9px; border-radius:999px}
+.lang button:hover{color:var(--ink)}
+.lang button[aria-pressed="true"]{color:var(--bg); background:var(--ink)}
+.lang + .theme-btn{margin-left:-12px}
 .theme-btn svg{width:18px; height:18px}
 @media (max-width:760px){
   .bar{position:static}

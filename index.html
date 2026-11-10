@@ -9,8 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). site.js = the top menu and the light/dark button. -->
+<!-- site.css = the shared look (colours, fonts, buttons, chord boxes). lang-sk.js = all Slovak texts. site.js = the top menu, the EN/SK switch and the light/dark button. -->
 <link rel="stylesheet" href="site.css">
+<script src="lang-sk.js"></script>
 <script src="site.js"></script>
 <style>
 /* Only this page: the two long fretboards and their controls. Everything shared is in site.css. */
@@ -314,7 +315,7 @@ function orderedForInv(c) {
 // usedStrings: a Set of strings that are played (the others get a ×), or null for no × marks.
 function boardFrame(usedStrings) {
   const bottom = TOP + 5 * GAP;
-  let s = `<svg class="fb" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="Fretboard diagram">`;
+  let s = `<svg class="fb" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="${T('Fretboard diagram')}">`;
   s += `<rect class="fb-wood" x="${NUT_X}" y="${TOP - 17}" width="${VB_W - NUT_X - 6}" height="${5 * GAP + 34}" rx="3"/>`;
   [3, 5, 7, 9, 15, 17].filter(n => n <= MAX_FRET).forEach(n => {
     s += `<circle class="fb-inlay" cx="${cx(n)}" cy="${TOP + 2.5 * GAP}" r="6.5"/>`;
@@ -445,8 +446,12 @@ function current() {
   return { rootName, names, bySet, all: state.sets.flatMap(si => bySet[si]), sel: mine[state.pos] || null };
 }
 
+// label and sub are translated by T() when lang-sk.js knows them
 const chip = (id, act, v, label, sub) =>
-  `<button type="button" class="chip" id="${id}" data-act="${act}" data-v="${v}" aria-pressed="false">${label}${sub ? `<small>${sub}</small>` : ''}</button>`;
+  `<button type="button" class="chip" id="${id}" data-act="${act}" data-v="${v}" aria-pressed="false">${T(label)}${sub ? `<small>${T(sub)}</small>` : ''}</button>`;
+// the chord as a title, e.g. "C major · root position" / "C dur · základný tvar"
+const chordTitle = (rootName, q) => `${pretty(rootName)} ${T(q.name).toLowerCase()}`;
+const invName = i => T(INV_NAMES[i]).toLowerCase();
 let scaleChipsFor = null;
 
 function render() {
@@ -457,8 +462,9 @@ function render() {
   const q = QUALITIES[state.q];
 
   if (scaleChipsFor !== state.q) {       // the scale choices depend on the chord type
+    // the short scale names are looked up as 'scale:Major', because 'Major' alone is the chord type
     $('scales').innerHTML = SCALES_BY_Q[state.q].map(k =>
-      chip('scale-' + k, 'scale', k, SCALES[k].chip, SCALES[k].deg.join(' '))).join('');
+      chip('scale-' + k, 'scale', k, T('scale:' + SCALES[k].chip).replace('scale:', ''), SCALES[k].deg.join(' '))).join('');
     scaleChipsFor = state.q;
   }
   const cur = { root: state.root, q: state.q, scale: state.scale, inv: state.inv, view: state.view, labels: state.labels, width: state.wide ? 'wide' : 'compact' };
@@ -468,28 +474,29 @@ function render() {
     else if (a === 'setall') b.setAttribute('aria-pressed', String(state.sets.length === STRING_SETS.length));
     else if (a in cur) b.setAttribute('aria-pressed', String(String(cur[a]) === v));
   });
-  [0, 1, 2].forEach(i => { $('inv-sub-' + i).textContent = 'bass ' + pretty(names[i]); });
+  [0, 1, 2].forEach(i => { $('inv-sub-' + i).textContent = T('bass {note}', { note: pretty(names[i]) }); });
 
   // top fretboard
-  $('title').textContent = `${pretty(rootName)} ${q.name.toLowerCase()} · ${INV_NAMES[state.inv].toLowerCase()}`;
+  $('title').textContent = `${chordTitle(rootName, q)} · ${invName(state.inv)}`;
   $('now').textContent = sel
-    ? `Selected shape: strings ${setLabel(sel.set)} (${setNotes(sel.set)}), frets ${sel.frets.join(' · ')}.`
-    : `No ${INV_NAMES[state.inv].toLowerCase()} shape fits on these strings within the first ${MAX_FRET} frets.`;
+    ? T('Selected shape: strings {set} ({notes}), frets {frets}.', { set: setLabel(sel.set), notes: setNotes(sel.set), frets: sel.frets.join(' · ') })
+    : T('No {inv} shape fits on these strings within the first {n} frets.', { inv: invName(state.inv), n: MAX_FRET });
   const list = orderedForInv(c), idx = list.findIndex(s => s === sel);
-  $('shape-count').textContent = list.length ? `Shape ${idx + 1} of ${list.length}` : 'No shapes';
+  $('shape-count').textContent = list.length ? T('Shape {i} of {n}', { i: idx + 1, n: list.length }) : T('No shapes');
   $('shape-prev').disabled = $('shape-next').disabled = list.length < 2;
   $('play-chord').disabled = $('play-arp').disabled = !sel;
   $('boardWrap').innerHTML = boardSVG(c);
   $('boardWrap').querySelector('svg').setAttribute('aria-label',
-    `${pretty(rootName)} ${q.name.toLowerCase()} on the fretboard` + (sel ? `, selected: ${INV_NAMES[sel.inv].toLowerCase()}, frets ${sel.frets.join(', ')}` : ''));
+    T('{chord} on the fretboard', { chord: chordTitle(rootName, q) }) + (sel ? T(', selected: {inv}, frets {frets}', { inv: invName(sel.inv), frets: sel.frets.join(', ') }) : ''));
 
   // scale fretboard
   const info = scaleInfo(rootName, state.q, state.scale);
-  $('scaleTitle').textContent = `${pretty(rootName)} ${info.sc.name} scale`;
-  $('scaleNow').textContent = `Scale notes: ${info.ordered.map(n => pretty(n.name)).join(' · ')}. The triad notes ${names.map(pretty).join(' · ')} are lifted out in a lighter colour.`;
+  const scaleTitle = T('{root} {name} scale', { root: pretty(rootName), name: T(info.sc.name) });
+  $('scaleTitle').textContent = scaleTitle;
+  $('scaleNow').textContent = T('Scale notes: {notes}. The triad notes {tri} are lifted out in a lighter colour.', { notes: info.ordered.map(n => pretty(n.name)).join(' · '), tri: names.map(pretty).join(' · ') });
   $('scaleWrap').innerHTML = scaleBoardSVG(c);
   $('scaleWrap').querySelector('svg').setAttribute('aria-label',
-    `${pretty(rootName)} ${info.sc.name} scale on the fretboard, with the notes ${names.map(pretty).join(', ')} highlighted`);
+    T('{scale} on the fretboard, with the notes {tri} highlighted', { scale: scaleTitle, tri: names.map(pretty).join(', ') }));
 }
 
 // ---- Sound ---------------------------------------------------------------
@@ -534,7 +541,7 @@ $('views').innerHTML = chip('view-all', 'view', 'all', 'All shapes', 'every inve
 
 $('widths').innerHTML = chip('width-wide', 'width', 'wide', 'Wide', 'spread frets')
   + chip('width-compact', 'width', 'compact', 'Compact', 'fits small screens')
-  + '<button type="button" class="chip" id="fs-btn" aria-pressed="false" hidden>Full screen<small>hides browser bars</small></button>';
+  + `<button type="button" class="chip" id="fs-btn" aria-pressed="false" hidden>${T('Full screen')}<small>${T('hides browser bars')}</small></button>`;
 
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
@@ -611,7 +618,7 @@ function syncFullscreen() {
   const on = !!fsElement();
   b.hidden = !fsEnabled;
   b.setAttribute('aria-pressed', String(on));
-  b.firstChild.textContent = on ? 'Exit full screen' : 'Full screen';
+  b.firstChild.textContent = on ? T('Exit full screen') : T('Full screen');
 }
 $('fs-btn').addEventListener('click', async () => {
   try {
@@ -619,7 +626,7 @@ $('fs-btn').addEventListener('click', async () => {
     else await (fsRoot.requestFullscreen || fsRoot.webkitRequestFullscreen).call(fsRoot);
   } catch (err) {
     const note = $('fs-btn').lastChild;
-    if (note) note.textContent = 'not available in this view';
+    if (note) note.textContent = T('not available in this view');
   }
 });
 document.addEventListener('fullscreenchange', syncFullscreen);
