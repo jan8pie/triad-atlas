@@ -6,6 +6,7 @@
   const PAGES = [
     { href: './',                  label: 'Triads' },
     { href: 'harmonized-scale.html', label: 'Chords of a key' },
+    { href: 'progressions.html',   label: 'Progressions' },
     { href: 'major-minor.html',    label: 'Major & minor' },
     { href: 'seventh-chords.html', label: 'Seventh chords' },
     { href: 'sus-chords.html',     label: 'Sus chords' },

@@ -17,6 +17,7 @@ window.TRIAD_SK = {
   // ---- Horná lišta a menu (site.js) -------------------------------------------
   'Triads': 'Trojzvuky',
   'Chords of a key': 'Akordy tóniny',
+  'Progressions': 'Postupy',
   'Major & minor': 'Dur a mol',
   'Seventh chords': 'Septakordy',
   'Sus chords': 'Sus akordy',
@@ -316,5 +317,46 @@ window.TRIAD_SK = {
   'Standard tuning (E A D G B e). Each chord box shows the lowest place of that chord on the chosen strings, with the fret number on the left. Capital numerals (I, IV, V) are major chords, small ones (ii, iii, vi) are minor and ° means diminished.':
     'Štandardné ladenie (E A D G B e). Každý diagram ukazuje najnižšie miesto daného akordu na vybraných strunách, číslo pražca je vľavo. Veľké rímske číslice (I, IV, V) sú durové akordy, malé (ii, iii, vi) molové a ° znamená zmenšený. Tóny sú písané medzinárodne: B je slovenské H a B♭ je slovenské B.',
   'In a minor key the 3rd, 6th and 7th notes are one fret lower than in the major key, so their numerals carry a ♭.':
-    'V molovej tónine sú 3., 6. a 7. tón o pražec nižšie než v durovej, preto majú ich číslice ♭.'
+    'V molovej tónine sú 3., 6. a 7. tón o pražec nižšie než v durovej, preto majú ich číslice ♭.',
+
+  // ---- Akordové postupy (progressions.html) -----------------------------------
+  'Chord Progressions · Triad Atlas': 'Akordové postupy · Triad Atlas',
+  'Chord progressions on guitar with triads: I–IV–V, ii–V–I and more in any key, with the nearest shapes on three strings and a metronome.':
+    'Akordové postupy na gitare s trojzvukmi: I–IV–V, ii–V–I a ďalšie v ľubovoľnej tónine, najbližšie tvary na troch strunách a metronóm.',
+  'Playing in a key': 'Hra v tónine',
+  'Chord Progressions': 'Akordové postupy',
+  'A chord progression is a short row of chords from one key, played round and round. Here every chord stays on the same three strings and takes the shape nearest to the one before, so your hand hardly moves. Watch the dots: some notes stay where they are, the others slide a fret or two. Press Play and follow along with the metronome.':
+    'Akordový postup je krátky rad akordov z jednej tóniny, ktorý sa hrá stále dookola. Tu každý akord ostáva na tých istých troch strunách a berie tvar najbližší k predchádzajúcemu, takže ruka sa takmer nehýbe. Sleduj bodky: niektoré tóny ostávajú na mieste, ostatné sa posunú o pražec či dva. Stlač Prehrať a hraj spolu s metronómom.',
+  'Progression settings': 'Nastavenia postupu',
+  'Progression': 'Postup',
+  '12-bar blues': '12-taktové blues',
+  'Or your own, with the numbers 1 to 7:': 'Alebo vlastný, číslami 1 až 7:',
+  'Your own progression, numbers 1 to 7': 'Vlastný postup, čísla 1 až 7',
+  'Place on the neck': 'Miesto na hmatníku',
+  'Place of the first chord on the neck': 'Miesto prvého akordu na hmatníku',
+  'Lower on the neck': 'Nižšie na hmatníku',
+  'Higher on the neck': 'Vyššie na hmatníku',
+  'Place {i} of {n}': 'Miesto {i} z {n}',
+  'Choose a chord of the progression': 'Výber akordu z postupu',
+  'Previous chord': 'Predchádzajúci akord',
+  'Next chord': 'Ďalší akord',
+  'Play': 'Prehrať',
+  '▶ Play': '▶ Prehrať',
+  'Tempo and metronome': 'Tempo a metronóm',
+  'Tempo': 'Tempo',
+  '{n} BPM': '{n} BPM',
+  'Beats per chord': 'Dôb na akord',
+  'Metronome': 'Metronóm',
+  'On': 'Zap.',
+  'Off': 'Vyp.',
+  'stays': 'ostáva',
+  '{inv}: notes {notes}.': '{inv}: tóny {notes}.',
+  'Ring: the note stays from the previous chord': 'Krúžok: tón ostáva z predchádzajúceho akordu',
+  'Notes of the other chords of the progression': 'Tóny ostatných akordov postupu',
+  'The progression {prog} in {key} on strings {set}, selected: {chord}': 'Postup {prog} v tónine {key} na strunách {set}, vybraný: {chord}',
+  '{prog} in {key}': '{prog} v tónine {key}',
+  'Click a chord to see and hear it. The dots in each box slide in from the chord before it.':
+    'Klikni na akord, zobrazí sa a zaznie. Bodky v každom diagrame sa prikĺžu z akordu pred ním.',
+  'Standard tuning (E A D G B e). The first chord sets the place on the neck. Every next chord takes the shape that needs the least finger movement, which is why the chords come in different inversions. ↑2 means the note moves two frets higher (towards the body of the guitar), ↓1 one fret lower. Capital numerals (I, IV, V) are major chords, small ones (ii, iii, vi) are minor and ° means diminished.':
+    'Štandardné ladenie (E A D G B e). Prvý akord určuje miesto na hmatníku. Každý ďalší akord berie tvar, pri ktorom sa prsty hýbu najmenej, preto sú akordy v rôznych obratoch. ↑2 znamená, že tón ide o dva pražce vyššie (smerom k telu gitary), ↓1 o pražec nižšie. Veľké rímske číslice (I, IV, V) sú durové akordy, malé (ii, iii, vi) molové a ° znamená zmenšený.'
 };
