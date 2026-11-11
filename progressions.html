@@ -53,7 +53,7 @@
 #bpm-val{font:600 13px/1.2 var(--font-mono); min-width:64px}
 .board{background:linear-gradient(180deg, var(--board-hi), var(--board)); border:1px solid var(--line); border-radius:16px; overflow-x:auto; padding:8px 4px; box-shadow:var(--shadow)}
 .sw.scl{background:var(--scale); border-color:var(--board)}
-.sw.ring{background:var(--tri); box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--muted); border:0; margin:0 4px}
+.sw.next{background:var(--scale); border:2px solid var(--tri); box-shadow:0 0 0 2px var(--muted)}
 /* fretboard svg */
 .fb{display:block; width:100%; min-width:800px; height:auto}
 .fb-wood{fill:var(--wood)}
@@ -71,13 +71,18 @@
 .hs-dot{stroke:var(--board); stroke-width:1.5}
 .hs-txt{fill:var(--on-dot); font:700 11px var(--font-mono); text-anchor:middle; pointer-events:none}
 .hs-txt.root{fill:var(--on-root)}
-.hs-stay{fill:none; stroke:var(--tri); stroke-width:2.5}
+/* while it plays: just before the change, the quiet dots of the next chord get a light edge and pulse.
+   Change .45s to make the pulse slower or faster, 1.22 to make it bigger or smaller. */
+.hs-ghost{transform-box:fill-box; transform-origin:center}
+.hs-ghost.hs-next .hs-scl{stroke:var(--tri); stroke-width:2.5}
+@keyframes hs-pulse{0%,100%{transform:none} 50%{transform:scale(1.22)}}
 /* the three dots of the chord slide along their strings from the previous chord. Change .55s to make it slower or faster. */
 @keyframes hs-slide{0%{transform:translate(var(--dx,0px),0)} 100%{transform:none}}
 @keyframes hs-fade{0%,45%{opacity:0}}
 @media (prefers-reduced-motion: no-preference){
   .hs-mv{animation:hs-slide .55s cubic-bezier(.3,1.2,.5,1) both}
-  .fb-link.hs-in, .hs-stay{animation:hs-fade .55s ease-out both}
+  .fb-link.hs-in{animation:hs-fade .55s ease-out both}
+  .hs-ghost.hs-next{animation:hs-pulse .45s ease-in-out infinite}
 }
 /* the chord boxes of the progression */
 .cards.prog{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
@@ -153,8 +158,8 @@
       <li><span class="sw tri"></span>3 and 5 of a major chord</li>
       <li><span class="sw c3"></span>♭3: minor third</li>
       <li><span class="sw c5"></span>♭5: diminished fifth</li>
-      <li><span class="sw ring"></span>Ring: the note stays from the previous chord</li>
       <li><span class="sw scl"></span>Notes of the other chords of the progression</li>
+      <li><span class="sw next"></span>Pulsing while it plays: the next chord</li>
       <li><span class="xmark">×</span>String not played</li>
     </ul>
   </section>
@@ -205,6 +210,7 @@ const BPM_RANGE = [40, 200];                   // slowest and fastest tempo of t
 const BEAT_CHOICES = [2, 4];                   // "Beats per chord" buttons
 const START_BEATS = 4;
 const COUNT_IN = true;                         // with the metronome on, one bar of clicks before the first chord
+const CUE_BEATS = 1;                           // while it plays, the next chord starts pulsing this many beats before the change (0 = never)
 const STRUM_EVERY_BEAT = false;                // false = the chord rings once per bar, true = it is played on every beat
 // Scales: semis = semitones above the key note, deg = the scale steps as numbers,
 // roots = how the twelve keys are written (flats or sharps).
@@ -398,15 +404,15 @@ function boardSVG(p, slideFrom) {
     if (seen.has(j + ':' + f)) return;
     seen.add(j + ':' + f);
     const n = key.notes.find(k => k.pc === (TUNING[strs[j]] + f) % 12), x = cx(f), y = sy(strs[j]);
-    s += `<circle class="hs-scl" cx="${x}" cy="${y}" r="${R - 2}"/>`;
+    s += `<g class="hs-ghost" data-at="${j}:${f}"><circle class="hs-scl" cx="${x}" cy="${y}" r="${R - 2}"/>`;
     if (state.labels !== 'chord') s += `<text class="hs-scl-txt" x="${x}" y="${y}" dy=".35em">${state.labels === 'notes' ? pretty(n.name) : n.deg}</text>`;
+    s += '</g>';
   }));
   const ch = key.chords[sel.d];
   s += `<polyline class="fb-link${slideFrom ? ' hs-in' : ''}" points="${sel.frets.map((f, j) => `${cx(f)},${sy(strs[j])}`).join(' ')}"/>`;
   sel.frets.forEach((f, j) => {
     const t = sel.tones[j], x = cx(f), y = sy(strs[j]);
     const stays = slideFrom && slideFrom[j] === f;
-    if (stays) s += `<circle class="hs-stay" cx="${x}" cy="${y}" r="${R + 4.5}"/>`;
     s += slideFrom && !stays ? `<g class="hs-mv" style="--dx:${(cx(slideFrom[j]) - x).toFixed(1)}px">` : '<g>';
     s += `<circle class="hs-dot f-${ch.q.fill[t]}" cx="${x}" cy="${y}" r="${R}"/>`;
     s += `<text class="hs-txt${t === 0 ? ' root' : ''}" x="${x}" y="${y}" dy=".35em">${dotLabel(key, ch, t)}</text></g>`;
@@ -571,6 +577,13 @@ function show(step, sound, dur) {
 function lightBeat(i) {
   [...$('beats').children].forEach((el, k) => el.classList.toggle('on', k === i));
 }
+// the quiet dots of the chord that comes next start pulsing (a note that stays is already lit, so it does not pulse)
+function cueNext(step) {
+  plan().seq[step].frets.forEach((f, j) => {
+    const g = document.querySelector(`#boardWrap .hs-ghost[data-at="${j}:${f}"]`);
+    if (g) g.classList.add('hs-next');
+  });
+}
 function schedule(beat, t) {
   const wait = Math.max(0, t - clock()), inBar = mod(beat, state.beats), n = state.prog.length;
   const beatLen = 60 / state.bpm;
@@ -581,6 +594,7 @@ function schedule(beat, t) {
   run.waits.push(setTimeout(() => {
     lightBeat(inBar);
     if (beat >= 0 && inBar === 0 && (step !== state.step || beat === 0)) show(step, false);
+    if (beat >= 0 && CUE_BEATS > 0 && inBar === state.beats - Math.min(CUE_BEATS, state.beats - 1)) cueNext((step + 1) % n);
   }, wait * 1000));
 }
 function pump() {

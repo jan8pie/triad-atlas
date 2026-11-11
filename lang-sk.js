@@ -351,7 +351,7 @@ window.TRIAD_SK = {
   'Off': 'Vyp.',
   'stays': 'ostáva',
   '{inv}: notes {notes}.': '{inv}: tóny {notes}.',
-  'Ring: the note stays from the previous chord': 'Krúžok: tón ostáva z predchádzajúceho akordu',
+  'Pulsing while it plays: the next chord': 'Pulzuje pri prehrávaní: nasledujúci akord',
   'Notes of the other chords of the progression': 'Tóny ostatných akordov postupu',
   'The progression {prog} in {key} on strings {set}, selected: {chord}': 'Postup {prog} v tónine {key} na strunách {set}, vybraný: {chord}',
   '{prog} in {key}': '{prog} v tónine {key}',
