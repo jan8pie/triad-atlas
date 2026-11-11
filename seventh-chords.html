@@ -186,28 +186,9 @@ function render() {
 }
 
 // ---- Sound ---------------------------------------------------------------
-let ac = null;
-function pluck(midi, t0, dur) {
-  const f = 440 * Math.pow(2, (midi - 69) / 12);
-  const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
-  osc.type = 'sawtooth'; osc.frequency.value = f;
-  lp.type = 'lowpass';
-  lp.frequency.setValueAtTime(Math.min(f * 9, 7000), t0);
-  lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.6, 320), t0 + 0.6);
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.linearRampToValueAtTime(0.16, t0 + 0.005);
-  g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
-  osc.connect(lp); lp.connect(g); g.connect(ac.destination);
-  osc.start(t0); osc.stop(t0 + dur + 0.05);
-}
+// The tone itself (Sound.notes, Sound.tick) is in site.js, shared by every page.
 function playChord(shape, key) {
-  try {
-    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (ac.state === 'suspended') ac.resume();
-    const t = ac.currentTime + 0.03;
-    shape.chords[key].frets.map((f, k) => f === null ? null : TUNING[k] + shape.play + f)
-      .filter(m => m !== null).forEach((m, i) => pluck(m, t + i * 0.05, 2.4));
-  } catch (e) { /* audio not available */ }
+  window.Sound.notes(shape.chords[key].frets.map((f, k) => f === null ? null : TUNING[k] + shape.play + f).filter(m => m !== null));
 }
 
 // ---- Controls --------------------------------------------------------------

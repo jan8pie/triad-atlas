@@ -1,5 +1,6 @@
 // Triad Atlas: the top bar shared by every page (logo, page menu, EN/SK language switch, light/dark button),
-// the Slovak translation of the texts, and the sliding-dot animation of the chord boxes.
+// the Slovak translation of the texts, the link with settings, the sound (notes and metronome click),
+// and the sliding-dot animation of the chord boxes.
 (function () {
   // ---- Settings you can change ------------------------------------------------
   // The menu. To add a page, add one line here: it then shows up on every page.
@@ -66,6 +67,66 @@
       };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(location.href).then(done, old);
       else old();
+    }
+  };
+
+  // Sound: one place for the guitar-like tone and the metronome click, used by every page.
+  //   Sound.notes([60, 64, 67])                      plays the notes (MIDI numbers) as a strummed chord
+  //   Sound.notes(pitches, { gap: 0.34, dur: 1.8 })  gap = seconds between two notes (bigger = arpeggio), dur = how long a note rings,
+  //                                                  wait = seconds from now (for playing in tempo)
+  //   Sound.tick(true)                               metronome click; true = the first beat (higher and louder)
+  const SOUND = {
+    volume: 0.2,        // loudness of one note (0 to about 0.3)
+    full: 0.8,          // chords of four or more notes are played this much quieter per note (1 = the same)
+    strum: 0.05,        // seconds between two notes of a chord
+    ring: 2.4,          // how long a note rings, in seconds
+    wave: 'sawtooth',   // the raw tone: 'sawtooth' (bright), 'triangle' (soft), 'square' (hollow)
+    click: [0.11, 0.06] // loudness of the metronome: first beat, other beats
+  };
+  let ac = null;
+  function audio() {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (err) { ac = null; /* audio not available */ }
+    return ac;
+  }
+  // one plucked note: a bright tone that quickly gets duller and fades, like a string
+  function pluck(midi, t0, dur, vol) {
+    const f = 440 * Math.pow(2, (midi - 69) / 12);
+    const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+    osc.type = SOUND.wave; osc.frequency.value = f;
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(Math.min(f * 9, 7000), t0);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.6, 320), t0 + 0.6);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+    osc.connect(lp); lp.connect(g); g.connect(ac.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.05);
+  }
+  window.Sound = {
+    // wakes the sound up (browsers allow sound only after a click); returns false when there is no sound
+    ready() { return !!audio(); },
+    notes(pitches, o) {
+      o = o || {};
+      if (!pitches || !pitches.length || !audio()) return;
+      try {
+        const t = ac.currentTime + 0.03 + (o.wait || 0), gap = o.gap === undefined ? SOUND.strum : o.gap;
+        const vol = SOUND.volume * (pitches.length > 3 ? SOUND.full : 1);
+        pitches.forEach((m, i) => pluck(m, t + i * gap, o.dur || SOUND.ring, vol));
+      } catch (err) { /* audio not available */ }
+    },
+    tick(first, wait) {
+      if (!audio()) return;
+      try {
+        const t = ac.currentTime + 0.03 + (wait || 0), osc = ac.createOscillator(), g = ac.createGain();
+        osc.type = 'square'; osc.frequency.value = first ? 1600 : 1050;
+        g.gain.setValueAtTime(SOUND.click[first ? 0 : 1], t);
+        g.gain.exponentialRampToValueAtTime(0.0005, t + 0.05);
+        osc.connect(g); g.connect(ac.destination);
+        osc.start(t); osc.stop(t + 0.07);
+      } catch (err) { /* audio not available */ }
     }
   };
 

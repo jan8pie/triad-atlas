@@ -524,43 +524,12 @@ function reveal(p) {
 }
 
 // ---- Sound ---------------------------------------------------------------
-let ac = null;
-function audio() {
-  try {
-    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (ac.state === 'suspended') ac.resume();
-  } catch (e) { ac = null; /* audio not available */ }
-  return ac;
-}
-function pluck(midi, t0, dur) {
-  const f = 440 * Math.pow(2, (midi - 69) / 12);
-  const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
-  osc.type = 'sawtooth'; osc.frequency.value = f;
-  lp.type = 'lowpass';
-  lp.frequency.setValueAtTime(Math.min(f * 9, 7000), t0);
-  lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.6, 320), t0 + 0.6);
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.linearRampToValueAtTime(0.2, t0 + 0.005);
-  g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
-  osc.connect(lp); lp.connect(g); g.connect(ac.destination);
-  osc.start(t0); osc.stop(t0 + dur + 0.05);
-}
-// in = seconds from now
-function playShape(sh, dur, wait) {
-  if (!sh || !audio()) return;
-  const t = ac.currentTime + 0.03 + (wait || 0);
-  sh.pitches.forEach((m, i) => pluck(m, t + i * 0.035, dur || 2.4));
-}
+// The tone itself (Sound.notes, Sound.tick) is in site.js, shared by every page.
+const audio = () => window.Sound.ready();
+// wait = seconds from now
+function playShape(sh, dur, wait) { if (sh) window.Sound.notes(sh.pitches, { gap: 0.035, dur, wait }); }
 // the metronome click; the first beat of the bar is higher and louder
-function tick(first, wait) {
-  if (!audio()) return;
-  const t = ac.currentTime + 0.03 + (wait || 0), osc = ac.createOscillator(), g = ac.createGain();
-  osc.type = 'square'; osc.frequency.value = first ? 1600 : 1050;
-  g.gain.setValueAtTime(first ? 0.11 : 0.06, t);
-  g.gain.exponentialRampToValueAtTime(0.0005, t + 0.05);
-  osc.connect(g); g.connect(ac.destination);
-  osc.start(t); osc.stop(t + 0.07);
-}
+const tick = (first, wait) => window.Sound.tick(first, wait);
 
 // ---- Playing in tempo -------------------------------------------------------
 // A small clock looks a little ahead every 25 ms and orders the clicks and chords for their exact time,
