@@ -280,8 +280,26 @@ window.TRIAD_SK = {
     'Harmonizovaná stupnica na gitare: sedem trojzvukov durovej alebo molovej tóniny na troch strunách, postupne hore po hmatníku.',
   'Harmonized scale': 'Harmonizovaná stupnica',
   'Chords of a Key': 'Akordy tóniny',
-  'Take a scale and build a triad on each of its seven notes, using only the notes of that scale: every other note, so 1 · 3 · 5, then 2 · 4 · 6, and so on. These seven chords belong to the key. On three neighbouring strings each finger simply walks up the scale along its own string. Step through the chords and watch which note moves one fret and which moves two.':
-    'Zober stupnicu a na každom z jej siedmich tónov postav trojzvuk len z tónov tej stupnice: vždy každý druhý tón, teda 1 · 3 · 5, potom 2 · 4 · 6 a tak ďalej. Týchto sedem akordov patrí do tóniny. Na troch susedných strunách každý prst jednoducho kráča po stupnici po svojej strune. Prechádzaj akordy a sleduj, ktorý tón sa posunie o jeden pražec a ktorý o dva.',
+  'Take a scale and build a triad on each of its seven notes, using only the notes of that scale: every other note, so 1 · 3 · 5, then 2 · 4 · 6, and so on. These seven chords belong to the key. There are two ways to play them on three neighbouring strings. Up the neck: one shape after another, each finger walks up the scale along its own string. In one place: the chords stay around one spot and change inversion, the way they are mostly used in songs. Press Play to practise them with a metronome.':
+    'Zober stupnicu a na každom z jej siedmich tónov postav trojzvuk len z tónov tej stupnice: vždy každý druhý tón, teda 1 · 3 · 5, potom 2 · 4 · 6 a tak ďalej. Týchto sedem akordov patrí do tóniny. Na troch susedných strunách sa dajú hrať dvoma spôsobmi. Hore po hmatníku: jeden tvar za druhým, každý prst kráča po stupnici po svojej strune. Na jednom mieste: akordy ostávajú okolo jedného miesta a menia obrat, tak ako sa najčastejšie hrajú v piesňach. Tlačidlom Prehrať si ich precvičíš s metronómom.',
+  'Way of playing': 'Spôsob hrania',
+  'Up the neck': 'Hore po hmatníku',
+  'one inversion': 'jeden obrat',
+  'In one place': 'Na jednom mieste',
+  'nearest inversions': 'najbližšie obraty',
+  'Inversion of the first chord': 'Obrat prvého akordu',
+  '(frets of the first chord)': '(pražce prvého akordu)',
+  'Choose chord': 'Výber akordu',
+  'Notes of the other chords (click one to jump to its chord). While playing, the next chord pulses just before the move':
+    'Tóny ostatných akordov (klikni na niektorý a skočíš na jeho akord). Pri prehrávaní nasledujúci akord tesne pred presunom pulzuje',
+  'Standard tuning (E A D G B e). Each chord box shows the chord in the inversion nearest to the first chord, with the fret number on the left.':
+    'Štandardné ladenie (E A D G B e). Každý diagram ukazuje akord v obrate, ktorý je najbližšie k prvému akordu, číslo pražca je vľavo.',
+  'Standard tuning (E A D G B e). Each chord box shows the lowest place of that chord on the chosen strings, with the fret number on the left.':
+    'Štandardné ladenie (E A D G B e). Každý diagram ukazuje najnižšie miesto daného akordu na vybraných strunách, číslo pražca je vľavo.',
+  'Capital numerals (I, IV, V) are major chords, small ones (ii, iii, vi) are minor and ° means diminished.':
+    'Veľké rímske číslice (I, IV, V) sú durové akordy, malé (ii, iii, vi) molové a ° znamená zmenšený. Tóny sú písané medzinárodne: B je slovenské H a B♭ je slovenské B.',
+  'Play goes round the seven chords, I to VII and back to I.': 'Prehrávanie ide dookola cez sedem akordov, od I po VII a späť na I.',
+  'Play walks up the neck and back down.': 'Prehrávanie ide hore po hmatníku a späť dole.',
   'Key': 'Tónina',
   'Key settings': 'Nastavenia tóniny',
   'Fretboard': 'Hmatník',

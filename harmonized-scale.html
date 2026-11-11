@@ -54,6 +54,26 @@
   .hs-mv{animation:hs-slide .55s cubic-bezier(.3,1.2,.5,1) both}
   .fb-link.hs-in{animation:hs-fade .55s ease-out both}
 }
+/* the next chord pulses just before the move (while playing). Change .42s to make the pulse slower or faster. */
+.ghost circle{transform-box:fill-box; transform-origin:center}
+@keyframes hs-pulse{0%{transform:scale(1)} 100%{transform:scale(1.28); fill:var(--muted)}}
+.ghost.cue circle{fill:var(--muted)}
+@media (prefers-reduced-motion: no-preference){
+  .ghost.cue circle{animation:hs-pulse .42s ease-in-out infinite alternate}
+}
+/* the play bar: beat lights, tempo, beats per chord, metronome */
+.transport{display:flex; flex-wrap:wrap; align-items:center; gap:12px 26px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 16px; box-shadow:var(--shadow)}
+.transport .lab{margin:0}
+.t-grp{display:flex; align-items:center; gap:10px; min-width:0}
+.t-grp .seg{flex-wrap:nowrap}
+.t-grp .chip{min-height:36px; padding:4px 12px}
+.beats{display:flex; gap:7px}
+.beats i{width:15px; height:15px; border-radius:50%; background:var(--chip); border:1px solid var(--btn-line)}
+.beats i.on{background:var(--accent); border-color:var(--accent)}
+.beats i.on:first-child{background:var(--root); border-color:var(--root)}
+#bpm{width:150px; accent-color:var(--accent)}
+#bpm-val{font:600 13px/1.2 var(--font-mono); min-width:64px}
+.btn.main{background:var(--accent); color:var(--accent-ink)}
 /* the seven chord boxes */
 .cards.seven{grid-template-columns:repeat(7,minmax(0,1fr)); max-width:none}
 .card[aria-pressed="true"]{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent), var(--shadow)}
@@ -67,6 +87,7 @@
   .roots .chip small{font-size:10px}
   .play{width:100%}
   .play .btn:not(.sq){flex:1 1 auto}
+  #bpm{width:120px}
 }
 @media (max-width:420px){ .cards.seven{grid-template-columns:repeat(3,minmax(0,1fr))} }
 </style>
@@ -77,7 +98,7 @@
   <header class="hero">
     <p class="eyebrow">Harmonized scale</p>
     <h1>Chords of a Key</h1>
-    <p class="intro">Take a scale and build a triad on each of its seven notes, using only the notes of that scale: every other note, so 1 · 3 · 5, then 2 · 4 · 6, and so on. These seven chords belong to the key. On three neighbouring strings each finger simply walks up the scale along its own string. Step through the chords and watch which note moves one fret and which moves two.</p>
+    <p class="intro">Take a scale and build a triad on each of its seven notes, using only the notes of that scale: every other note, so 1 · 3 · 5, then 2 · 4 · 6, and so on. These seven chords belong to the key. There are two ways to play them on three neighbouring strings. Up the neck: one shape after another, each finger walks up the scale along its own string. In one place: the chords stay around one spot and change inversion, the way they are mostly used in songs. Press Play to practise them with a metronome.</p>
   </header>
 
   <div class="panel">
@@ -85,7 +106,9 @@
     <div class="grp wide"><h2 class="lab">Key</h2><div class="roots" id="roots" role="group" aria-label="Key"></div></div>
     <div class="grp"><h2 class="lab">Scale</h2><div class="seg" id="scales" role="group" aria-label="Scale"></div></div>
     <div class="grp"><h2 class="lab">Strings, low to high</h2><div class="seg" id="sets" role="group" aria-label="String set"></div></div>
-    <div class="grp"><h2 class="lab">Inversion</h2><div class="seg" id="invs" role="group" aria-label="Inversion"></div></div>
+    <div class="grp"><h2 class="lab">Way of playing</h2><div class="seg" id="paths" role="group" aria-label="Way of playing"></div></div>
+    <div class="grp"><h2 class="lab" id="inv-lab">Inversion</h2><div class="seg" id="invs" role="group" aria-label="Inversion"></div></div>
+    <div class="grp" id="place-grp"><h2 class="lab">Place on the neck <em>(frets of the first chord)</em></h2><div class="seg" id="places" role="group" aria-label="Place on the neck"></div></div>
     <div class="grp"><h2 class="lab">Labels</h2><div class="seg" id="labels" role="group" aria-label="Dot labels"></div></div>
   </section>
   </div>
@@ -97,15 +120,21 @@
         <p class="now" id="now" aria-live="polite"></p>
       </div>
       <div class="play">
-        <div class="step" role="group" aria-label="Choose chord, from the nut upward">
-          <button type="button" class="btn sq" data-act="step" data-v="-1" aria-label="Previous chord, lower on the neck">‹</button>
+        <div class="step" role="group" aria-label="Choose chord">
+          <button type="button" class="btn sq" data-act="step" data-v="-1" aria-label="Previous chord">‹</button>
           <span id="shape-count" aria-live="polite"></span>
-          <button type="button" class="btn sq" data-act="step" data-v="1" aria-label="Next chord, higher on the neck">›</button>
+          <button type="button" class="btn sq" data-act="step" data-v="1" aria-label="Next chord">›</button>
         </div>
+        <button type="button" class="btn main" id="play-all">▶ Play</button>
         <button type="button" class="btn" id="play-chord">Play chord</button>
-        <button type="button" class="btn" id="play-all">Play up the neck</button>
         <button type="button" class="btn" id="copy-link">Copy link</button>
       </div>
+    </div>
+    <div class="transport" role="group" aria-label="Tempo and metronome">
+      <div class="t-grp"><div class="beats" id="beats" aria-hidden="true"></div></div>
+      <div class="t-grp"><label class="lab" for="bpm">Tempo</label><input type="range" id="bpm" step="1"><span id="bpm-val"></span></div>
+      <div class="t-grp"><span class="lab">Beats per chord</span><div class="seg" id="beatsSeg" role="group" aria-label="Beats per chord"></div></div>
+      <div class="t-grp"><span class="lab">Metronome</span><div class="seg" id="clickSeg" role="group" aria-label="Metronome"></div></div>
     </div>
     <div class="board" id="boardWrap"></div>
     <ul class="legend">
@@ -113,7 +142,7 @@
       <li><span class="sw tri"></span>3 and 5 of a major chord</li>
       <li><span class="sw c3"></span>♭3: minor third</li>
       <li><span class="sw c5"></span>♭5: diminished fifth</li>
-      <li><span class="sw scl"></span>Other scale notes on these strings (click one to jump to its chord)</li>
+      <li><span class="sw scl"></span>Notes of the other chords (click one to jump to its chord). While playing, the next chord pulses just before the move</li>
       <li><span class="xmark">×</span>String not played</li>
     </ul>
   </section>
@@ -138,7 +167,14 @@ const MAX_FRET = 17;                           // highest fret drawn and used
 const FRET_EVENNESS = 0.5;                     // fret spacing: 0 = like a real guitar (frets get closer towards the high end), 1 = all frets equal
 const STRING_SETS = [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]];   // 0 = low E string
 const START_SET = 3;                           // string set shown when the page opens (3 = strings 3 · 2 · 1)
-const PLAY_GAP = 0.85;                         // "Play up the neck": seconds between two chords
+const START_PATH = 'neck';                     // way of playing when the page opens: 'neck' = up the neck, 'place' = in one place
+// Playing
+const START_BPM = 80;                          // tempo when the page opens (beats per minute)
+const BPM_RANGE = [40, 200];                   // slowest and fastest tempo of the slider
+const BEAT_CHOICES = [1, 2, 4];                // "Beats per chord" buttons
+const START_BEATS = 2;
+const COUNT_IN = true;                         // with the metronome on, a few clicks before the first chord
+const CUE_NEXT = true;                         // while playing, the next chord pulses on the last beat before the move
 const BOX_ROWS = 4;                            // how many frets each small chord box shows
 // Scales: semis = semitones above the key note, deg = the scale steps as numbers,
 // roots = how the twelve keys are written (flats or sharps).
@@ -191,12 +227,13 @@ function keyInfo() {
   return { sc, keyName, notes, chords };
 }
 
-// Every chord of the key on the chosen strings in the chosen inversion, from the nut upward.
-// Each shape: d = which chord (0 = built on the 1st note), frets and pitches low to high, tones = which chord note each string plays.
-function findShapes(key) {
-  const strs = STRING_SETS[state.set], tones = [0, 1, 2].map(k => (k + state.inv) % 3), out = [];
-  key.chords.forEach(ch => {
-    const need = tones.map(t => key.notes[ch.steps[t]].pc);
+// Every shape of one chord on the chosen strings in the given inversions, from the nut upward.
+// Each shape: d = which chord (0 = built on the 1st note), inv = inversion, frets and pitches low to high,
+// tones = which chord note each string plays (0 = root, 1 = third, 2 = fifth).
+function chordShapes(key, ch, invs) {
+  const strs = STRING_SETS[state.set], out = [];
+  invs.forEach(inv => {
+    const tones = [0, 1, 2].map(k => (k + inv) % 3), need = tones.map(t => key.notes[ch.steps[t]].pc);
     for (let f0 = 0; f0 <= MAX_FRET; f0++) {
       if ((TUNING[strs[0]] + f0) % 12 !== need[0]) continue;
       const frets = [f0], pitches = [TUNING[strs[0]] + f0];
@@ -204,16 +241,35 @@ function findShapes(key) {
         const p = pitches[j - 1] + mod(need[j] - pitches[j - 1] - 1, 12) + 1;
         pitches.push(p); frets.push(p - TUNING[strs[j]]);
       }
-      if (frets.every(f => f >= 0 && f <= MAX_FRET)) out.push({ d: ch.d, strs, frets, pitches, tones });
+      if (frets.every(f => f >= 0 && f <= MAX_FRET)) out.push({ d: ch.d, inv, strs, frets, pitches, tones });
     }
   });
-  out.sort((a, b) => a.pitches[0] - b.pitches[0]);
-  return out;
+  return out.sort((a, b) => a.pitches[0] - b.pitches[0]);
+}
+// How far the fingers travel between two shapes: frets moved, added up over the three strings.
+const travel = (a, b) => a.frets.reduce((sum, f, j) => sum + Math.abs(f - b.frets[j]), 0);
+
+// Up the neck: every chord of the key in the chosen inversion, from the nut upward.
+function neckShapes(key) {
+  return key.chords.flatMap(ch => chordShapes(key, ch, [state.inv])).sort((a, b) => a.pitches[0] - b.pitches[0]);
+}
+// In one place: the first chord (I) sits where you chose, in the chosen inversion. Every other chord takes
+// the inversion that lies nearest to it, so all seven chords stay around one spot. Returns them in order I to VII.
+function placeShapes(key) {
+  const firsts = chordShapes(key, key.chords[0], [state.inv]);
+  let pos = state.place;
+  if (pos < 0 || pos >= firsts.length) pos = Math.max(0, firsts.findIndex(s => s.frets.every(f => f >= 1)));   // automatic: lowest without open strings
+  const start = firsts[pos];
+  const shapes = !start ? [] : key.chords.map(ch => ch.d === 0 ? start
+    : chordShapes(key, ch, [0, 1, 2]).reduce((best, sh) => (!best || travel(sh, start) < travel(best, start)) ? sh : best, null));
+  return { firsts, pos, shapes };
 }
 
 // ---- State and link ---------------------------------------------------------
 // chord = which chord of the key (0 to 6), high = 0 for its lowest shape on the neck, 1 for the next one up
-const state = { root: 0, scale: 'major', set: START_SET, inv: 0, labels: 'notes', chord: 0, high: 0 };
+// path = 'neck' or 'place', place = which shape of the first chord the one-place way starts from (-1 = automatic)
+const state = { root: 0, scale: 'major', set: START_SET, inv: 0, labels: 'notes', chord: 0, high: 0,
+  path: START_PATH, place: -1, bpm: START_BPM, beats: START_BEATS, click: 1 };
 const LINK_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 const LABEL_MODES = ['notes', 'chord', 'key'];
 // Link with settings: the choices are written into the address (for example ?key=G&scale=minor&strings=432&chord=4),
@@ -231,23 +287,35 @@ function loadLink() {
   if (chord !== null && chord >= 1 && chord <= 7) state.chord = chord - 1;
   if (high !== null) state.high = high;
   if (LABEL_MODES.includes(labels)) state.labels = labels;
+  const path = get('path'), place = num('place'), bpm = num('bpm'), beats = num('beats'), click = num('click');
+  if (path === 'neck' || path === 'place') state.path = path;
+  if (place !== null && place >= 1) state.place = place - 1;
+  if (bpm !== null) state.bpm = Math.min(BPM_RANGE[1], Math.max(BPM_RANGE[0], bpm));
+  if (BEAT_CHOICES.includes(beats)) state.beats = beats;
+  if (click === 0 || click === 1) state.click = click;
 }
 function saveLink() {
   if (!window.Link) return;
   window.Link.set({ key: LINK_ROOTS[state.root], scale: state.scale, strings: setCode(state.set), inv: state.inv,
-    chord: state.chord + 1, high: state.high, labels: state.labels });
+    chord: state.chord + 1, high: state.high, labels: state.labels,
+    path: state.path, place: state.place < 0 ? 'auto' : state.place + 1, bpm: state.bpm, beats: state.beats, click: state.click });
 }
 loadLink();
 
+// shapes = the chords you step through (up the neck: from the nut upward, in one place: I to VII), sel = the one shown
 function current() {
-  const key = keyInfo(), shapes = findShapes(key);
-  const mine = shapes.filter(s => s.d === state.chord);
+  const key = keyInfo();
+  if (state.path === 'place') {
+    const pl = placeShapes(key);
+    return { key, shapes: pl.shapes, sel: pl.shapes[state.chord] || null, firsts: pl.firsts, pos: pl.pos };
+  }
+  const shapes = neckShapes(key), mine = shapes.filter(s => s.d === state.chord);
   if (state.high >= mine.length) state.high = 0;
   return { key, shapes, sel: mine[state.high] || null };
 }
 function select(shape, shapes) {
   state.chord = shape.d;
-  state.high = shapes.filter(s => s.d === shape.d).indexOf(shape);
+  state.high = state.path === 'place' ? 0 : shapes.filter(s => s.d === shape.d).indexOf(shape);
 }
 
 // ---- Drawing --------------------------------------------------------------
@@ -294,16 +362,23 @@ function dotLabel(key, ch, t) {
 function boardSVG(c, slideFrom) {
   const { key, shapes, sel } = c, strs = STRING_SETS[state.set];
   let s = boardFrame(strs);
-  // the scale on the three strings: every dot belongs to exactly one chord shape, a click jumps to it
+  // the notes of the other chords: a click jumps to the chord (data-sh lists every chord shape that uses the dot)
+  const taken = new Set(sel ? sel.frets.map((f, j) => j + ':' + f) : []), ghosts = new Map();
   shapes.forEach((sh, i) => {
     if (sh === sel) return;
     const ch = key.chords[sh.d];
     sh.frets.forEach((f, j) => {
-      const n = key.notes[ch.steps[sh.tones[j]]], x = cx(f), y = sy(strs[j]);
-      s += `<g class="ghost" data-act="shape" data-v="${i}"><circle class="hs-scl" cx="${x}" cy="${y}" r="${R - 2}"/>`;
-      if (state.labels !== 'chord') s += `<text class="hs-scl-txt" x="${x}" y="${y}" dy=".35em">${state.labels === 'notes' ? pretty(n.name) : n.deg}</text>`;
-      s += '</g>';
+      const k = j + ':' + f;
+      if (taken.has(k)) return;
+      if (!ghosts.has(k)) ghosts.set(k, { f, j, n: key.notes[ch.steps[sh.tones[j]]], of: [] });
+      ghosts.get(k).of.push(i);
     });
+  });
+  ghosts.forEach(g => {
+    const x = cx(g.f), y = sy(strs[g.j]);
+    s += `<g class="ghost" data-act="shape" data-v="${g.of[0]}" data-sh=" ${g.of.join(' ')} "><circle class="hs-scl" cx="${x}" cy="${y}" r="${R - 2}"/>`;
+    if (state.labels !== 'chord') s += `<text class="hs-scl-txt" x="${x}" y="${y}" dy=".35em">${state.labels === 'notes' ? pretty(g.n.name) : g.n.deg}</text>`;
+    s += '</g>';
   });
   if (sel) {
     const ch = key.chords[sel.d];
@@ -322,9 +397,10 @@ function boardSVG(c, slideFrom) {
 const SG = 22, FH = 30, LEFT = 26, TOPY = 26, BR = 9.5;
 const BOX_W = LEFT + 5 * SG + 16;
 const xs = s => LEFT + s * SG;
-function boxSVG(key, sh) {
-  const ch = key.chords[sh.d], fretted = sh.frets.filter(f => f > 0);
-  const lo = fretted.length ? Math.min(...fretted) : 1, hi = Math.max(lo + BOX_ROWS - 1, ...sh.frets);
+// group = the shapes that share the box's frets (in one place: all seven, so every box shows the same piece of the neck)
+function boxSVG(key, sh, group) {
+  const ch = key.chords[sh.d], all = group.flatMap(g => g.frets), fretted = all.filter(f => f > 0);
+  const lo = fretted.length ? Math.min(...fretted) : 1, hi = Math.max(lo + BOX_ROWS - 1, ...all);
   const rows = hi - lo + 1, H = TOPY + rows * FH + 8;
   const fy = f => f === 0 ? TOPY - 11 : TOPY + (f - lo + 0.5) * FH;      // an open string sits above the box
   let s = `<svg class="cb" viewBox="0 0 ${BOX_W} ${H}" aria-hidden="true">`;
@@ -349,7 +425,15 @@ const chip = (act, v, label, sub) =>
 
 function render(slideFrom) {
   const c = current(), { key, shapes, sel } = c;
-  const cur = { root: state.root, scale: state.scale, set: state.set, inv: state.inv, labels: state.labels };
+  const place = state.path === 'place';
+  $('place-grp').hidden = !place;
+  $('inv-lab').textContent = place ? T('Inversion of the first chord') : T('Inversion');
+  if (place) $('places').innerHTML = c.firsts.map((sh, i) => chip('place', i, sh.frets.join(' · '), '')).join('');
+  const cur = { root: state.root, scale: state.scale, set: state.set, inv: state.inv, labels: state.labels,
+    path: state.path, place: place ? c.pos : -1, beats: state.beats, click: state.click };
+  $('bpm').value = state.bpm;
+  $('bpm-val').textContent = T('{n} BPM', { n: state.bpm });
+  if ($('beats').children.length !== state.beats) $('beats').innerHTML = '<i></i>'.repeat(state.beats);
   document.querySelectorAll('.chip[data-act]').forEach(b => {
     b.setAttribute('aria-pressed', String(String(cur[b.dataset.act]) === b.dataset.v));
   });
@@ -358,7 +442,7 @@ function render(slideFrom) {
   const spelled = ch.steps.map(i => pretty(key.notes[i].name)).join(' · ');
 
   // fretboard
-  $('title').textContent = `${ch.numeral} · ${ch.full}`;
+  $('title').textContent = `${ch.numeral} · ${ch.full}` + (place && sel ? ` · ${T(INV_NAMES[sel.inv]).toLowerCase()}` : '');
   $('now').textContent = T('Notes {notes}: steps {steps} of the {key} scale.', { notes: spelled, steps: ch.steps.map(i => key.notes[i].deg).join(' · '), key: keyTitle })
     + ' ' + (sel ? T('Strings {set} ({strings}), frets {frets}.', { set: setLabel(state.set), strings: setNotes(state.set), frets: sel.frets.join(' · ') })
                  : T('This chord does not fit on these strings within the first {n} frets.', { n: MAX_FRET }));
@@ -378,12 +462,16 @@ function render(slideFrom) {
   $('cards').innerHTML = key.chords.map(k => {
     const sh = shapes.find(s => s.d === k.d);
     if (!sh) return '';
-    const notes = k.steps.map(i => pretty(key.notes[i].name)).join(' · ');
-    return `<button type="button" class="card" data-act="chord" data-v="${k.d}" aria-pressed="${k.d === state.chord}" aria-label="${T('Show and play {numeral}, {chord}: {notes}', { numeral: k.numeral, chord: k.full, notes })}">
-      <span class="roman">${k.numeral}</span><span class="cname">${k.short}</span>${boxSVG(key, sh)}<span class="how">${notes}</span></button>`;
+    const notes = k.steps.map(i => pretty(key.notes[i].name)).join(' · ') + (place ? `<br>${T(INV_NAMES[sh.inv])}` : '');
+    return `<button type="button" class="card" data-act="chord" data-v="${k.d}" aria-pressed="${k.d === state.chord}" aria-label="${T('Show and play {numeral}, {chord}: {notes}', { numeral: k.numeral, chord: k.full, notes: notes.replace('<br>', ', ') })}">
+      <span class="roman">${k.numeral}</span><span class="cname">${k.short}</span>${boxSVG(key, sh, place ? shapes : [sh])}<span class="how">${notes}</span></button>`;
   }).join('');
-  $('foot').textContent = T('Standard tuning (E A D G B e). Each chord box shows the lowest place of that chord on the chosen strings, with the fret number on the left. Capital numerals (I, IV, V) are major chords, small ones (ii, iii, vi) are minor and ° means diminished.')
+  $('foot').textContent = T(place ? 'Standard tuning (E A D G B e). Each chord box shows the chord in the inversion nearest to the first chord, with the fret number on the left.'
+      : 'Standard tuning (E A D G B e). Each chord box shows the lowest place of that chord on the chosen strings, with the fret number on the left.')
+    + ' ' + T('Capital numerals (I, IV, V) are major chords, small ones (ii, iii, vi) are minor and ° means diminished.')
+    + ' ' + T(place ? 'Play goes round the seven chords, I to VII and back to I.' : 'Play walks up the neck and back down.')
     + (state.scale === 'minor' ? ' ' + T('In a minor key the 3rd, 6th and 7th notes are one fret lower than in the major key, so their numerals carry a ♭.') : '');
+  return c;
 }
 
 function reveal(sel) {
@@ -397,6 +485,13 @@ function reveal(sel) {
 
 // ---- Sound ---------------------------------------------------------------
 let ac = null;
+function audio() {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+  } catch (e) { ac = null; /* audio not available */ }
+  return ac;
+}
 function pluck(midi, t0, dur) {
   const f = 440 * Math.pow(2, (midi - 69) / 12);
   const osc = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
@@ -410,40 +505,92 @@ function pluck(midi, t0, dur) {
   osc.connect(lp); lp.connect(g); g.connect(ac.destination);
   osc.start(t0); osc.stop(t0 + dur + 0.05);
 }
-function playShape(sel, dur) {
-  if (!sel) return;
-  try {
-    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (ac.state === 'suspended') ac.resume();
-    const t = ac.currentTime + 0.03;
-    sel.pitches.forEach((m, i) => pluck(m, t + i * 0.05, dur || 2.4));
-  } catch (e) { /* audio not available */ }
+// wait = seconds from now
+function playShape(sh, dur, wait) {
+  if (!sh || !audio()) return;
+  const t = ac.currentTime + 0.03 + (wait || 0);
+  sh.pitches.forEach((m, i) => pluck(m, t + i * 0.04, dur || 2.4));
+}
+// the metronome click; the first beat of a chord is higher and louder
+function tick(first, wait) {
+  if (!audio()) return;
+  const t = ac.currentTime + 0.03 + (wait || 0), osc = ac.createOscillator(), g = ac.createGain();
+  osc.type = 'square'; osc.frequency.value = first ? 1600 : 1050;
+  g.gain.setValueAtTime(first ? 0.11 : 0.06, t);
+  g.gain.exponentialRampToValueAtTime(0.0005, t + 0.05);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(t); osc.stop(t + 0.07);
 }
 
-// "Play up the neck": every chord from the nut upward, the dots slide from one to the next
-let run = null;
-function stopRun() {
-  if (run) { clearInterval(run); run = null; $('play-all').textContent = T('Play up the neck'); }
-}
-function goTo(shape, shapes, dur) {
+// shows a chord: the dots slide there from the chord shown before
+function goTo(shape, shapes, sound) {
   const before = current().sel;
   select(shape, shapes);
-  render(before ? before.frets : null);
-  saveLink();
+  render(before && before !== shape ? before.frets : null);
   reveal(shape);
-  playShape(shape, dur);
+  if (sound) playShape(shape);
+}
+
+// ---- Playing in tempo -------------------------------------------------------
+// The order of the chords follows the key, scale, strings and way of playing you chose:
+// up the neck = every shape from the nut upward and back down, in one place = I to VII, round and round.
+// A small clock looks a little ahead every 25 ms and orders the clicks and chords for their exact time,
+// so the beat stays steady. The tempo can be changed while it plays.
+let run = null;
+const clock = () => performance.now() / 1000;
+function playOrder(n) {
+  const up = [...Array(n).keys()];
+  return state.path === 'place' || n < 3 ? up : up.concat(up.slice(1, -1).reverse());
+}
+function lightBeat(i) {
+  [...$('beats').children].forEach((el, k) => el.classList.toggle('on', k === i));
+}
+// the dots of the chord that comes next start to pulse
+function cueNext(i) {
+  if (!CUE_NEXT) return;
+  document.querySelectorAll('#boardWrap .ghost').forEach(g => g.classList.toggle('cue', g.dataset.sh.includes(' ' + i + ' ')));
+}
+function schedule(beat, t) {
+  const wait = Math.max(0, t - clock()), inBar = mod(beat, state.beats), beatLen = 60 / state.bpm;
+  const shapes = run.shapes, order = run.order;
+  if (state.click) tick(inBar === 0, wait);
+  const k = beat >= 0 ? Math.floor(beat / state.beats) % order.length : 0;
+  if (beat >= 0 && inBar === 0) playShape(shapes[order[k]], Math.min(2.6, Math.max(0.7, state.beats * beatLen * 1.15)), wait);
+  run.waits.push(setTimeout(() => {
+    lightBeat(inBar);
+    if (beat >= 0 && inBar === 0) goTo(shapes[order[k]], shapes, false);
+    const lastBeat = inBar === state.beats - 1;
+    if (lastBeat && state.beats > 1) cueNext(order[beat < 0 ? 0 : (k + 1) % order.length]);
+  }, wait * 1000));
+  if (state.beats === 1 && beat >= 0) run.waits.push(setTimeout(() => cueNext(order[(k + 1) % order.length]), (wait + beatLen / 2) * 1000));
+}
+function pump() {
+  while (run && run.next < clock() + 0.12) {
+    schedule(run.beat, run.next);
+    run.next += 60 / state.bpm;
+    run.beat++;
+  }
 }
 function startRun() {
   const shapes = current().shapes;
   if (!shapes.length) return;
-  let i = 0;
-  $('play-all').textContent = T('Stop');
-  goTo(shapes[0], shapes, 1.4);
-  run = setInterval(() => {
-    i++;
-    if (i >= shapes.length) { stopRun(); return; }
-    goTo(shapes[i], shapes, i === shapes.length - 1 ? 2.4 : 1.4);
-  }, PLAY_GAP * 1000);
+  audio();
+  goTo(shapes[0], shapes, false);
+  const lead = state.click && COUNT_IN ? -Math.max(state.beats, 2) : 0;       // count-in clicks
+  run = { next: clock() + 0.08, beat: lead - mod(lead, state.beats), waits: [], shapes, order: playOrder(shapes.length) };
+  run.timer = setInterval(pump, 25);
+  $('play-all').textContent = '■ ' + T('Stop');
+  pump();
+}
+function stopRun() {
+  if (!run) return;
+  clearInterval(run.timer);
+  run.waits.forEach(clearTimeout);
+  run = null;
+  lightBeat(-1);
+  cueNext(-1);
+  $('play-all').textContent = '▶ ' + T('Play');
+  saveLink();
 }
 
 // ---- Controls --------------------------------------------------------------
@@ -451,6 +598,11 @@ $('roots').innerHTML = ROOT_LABELS.map((l, i) => chip('root', i, l.replace('|', 
 $('scales').innerHTML = Object.keys(SCALES).map(k => chip('scale', k, T('scale:' + SCALES[k].chip).replace('scale:', ''), SCALES[k].deg.join(' '))).join('');
 $('sets').innerHTML = STRING_SETS.map((st, i) => chip('set', i, setLabel(i), setNotes(i))).join('');
 $('invs').innerHTML = INV_NAMES.map((n, i) => chip('inv', i, n, ['bass 1', 'bass 3', 'bass 5'][i])).join('');
+$('paths').innerHTML = chip('path', 'neck', 'Up the neck', 'one inversion') + chip('path', 'place', 'In one place', 'nearest inversions');
+$('beatsSeg').innerHTML = BEAT_CHOICES.map(b => chip('beats', b, String(b), '')).join('');
+$('clickSeg').innerHTML = chip('click', 1, 'On', '') + chip('click', 0, 'Off', '');
+$('bpm').min = BPM_RANGE[0]; $('bpm').max = BPM_RANGE[1];
+$('play-all').textContent = '▶ ' + T('Play');
 $('labels').innerHTML = chip('labels', 'notes', 'Notes', 'C · E · G')
   + chip('labels', 'chord', 'In the chord', '1 · 3 · 5')
   + chip('labels', 'key', 'In the key', '1 to 7');
@@ -459,6 +611,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if (!b || b.disabled) return;
   const a = b.dataset.act, v = b.dataset.v;
+  if (a === 'click') { state.click = +v; render(); saveLink(); return; }     // the metronome can be switched while it plays
   stopRun();
   const before = current();
   if (a === 'step' || a === 'shape' || a === 'chord') {
@@ -467,21 +620,26 @@ document.addEventListener('click', e => {
     if (a === 'step' && shapes.length) target = shapes[mod(shapes.indexOf(before.sel) + (+v), shapes.length)];
     else if (a === 'shape') target = shapes[+v];
     else if (a === 'chord') target = (before.sel && before.sel.d === +v) ? before.sel : shapes.find(s => s.d === +v);
-    if (target) goTo(target, shapes);
+    if (target) { goTo(target, shapes, true); saveLink(); }
     return;
   }
   if (a === 'root') { state.root = +v; state.chord = 0; state.high = 0; }
   else if (a === 'scale') { state.scale = v; state.chord = 0; state.high = 0; }
-  else if (a === 'set') { state.set = +v; state.high = 0; }
-  else if (a === 'inv') { state.inv = +v; state.high = 0; }
+  else if (a === 'set') { state.set = +v; state.high = 0; state.place = -1; }
+  else if (a === 'inv') { state.inv = +v; state.high = 0; state.place = -1; }
+  else if (a === 'path') { state.path = v; state.high = 0; }
+  else if (a === 'place') { state.place = +v; }
+  else if (a === 'beats') { state.beats = +v; }
   else if (a === 'labels') { state.labels = v; }
   render();
   saveLink();
-  if (a !== 'labels') reveal(current().sel);
+  if (!['labels', 'beats'].includes(a)) reveal(current().sel);
 });
 $('play-chord').addEventListener('click', () => { stopRun(); playShape(current().sel); });
 $('play-all').addEventListener('click', () => { if (run) stopRun(); else startRun(); });
 $('copy-link').addEventListener('click', () => { saveLink(); window.Link.copy($('copy-link')); });
+$('bpm').addEventListener('input', () => { state.bpm = +$('bpm').value; $('bpm-val').textContent = T('{n} BPM', { n: state.bpm }); });
+$('bpm').addEventListener('change', saveLink);
 
 render();
 if (location.search) reveal(current().sel);      // opened from a link with settings: bring the selected chord into view
