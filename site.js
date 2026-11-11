@@ -5,6 +5,7 @@
   // The menu. To add a page, add one line here: it then shows up on every page.
   const PAGES = [
     { href: './',                  label: 'Triads' },
+    { href: 'harmonized-scale.html', label: 'Chords of a key' },
     { href: 'major-minor.html',    label: 'Major & minor' },
     { href: 'seventh-chords.html', label: 'Seventh chords' },
     { href: 'sus-chords.html',     label: 'Sus chords' },
@@ -39,6 +40,33 @@
   }
   window.T = T;
   window.LANG = lang;
+
+  // Link with settings: a page writes its current choices into the address (?root=Eb&type=min ...), so the link
+  // can be bookmarked or sent to somebody and opens the page exactly as it was. The language part (?lang=) is kept.
+  window.Link = {
+    // the value of one setting from the address, or null
+    get(name) { try { return new URLSearchParams(location.search).get(name); } catch (err) { return null; } },
+    // writes the settings into the address without loading the page again
+    set(values) {
+      try {
+        const url = new URL(location.href);
+        Object.keys(values).forEach(k => url.searchParams.set(k, values[k]));
+        history.replaceState(null, '', url);
+      } catch (err) { /* address cannot be changed here */ }
+    },
+    // copies the address; the button says "Link copied" for a moment
+    copy(btn) {
+      const done = () => { btn.textContent = T('Link copied'); setTimeout(() => { btn.textContent = T('Copy link'); }, 1600); };
+      const old = () => {
+        const ta = document.createElement('textarea');
+        ta.value = location.href; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (err) { /* copying not available */ }
+        ta.remove();
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(location.href).then(done, old);
+      else old();
+    }
+  };
 
   // Texts written directly in the HTML of a page (headings, paragraphs, legends, labels for screen readers)
   // are looked up in lang-sk.js as they are, so they need no special marking.

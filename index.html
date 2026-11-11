@@ -107,6 +107,7 @@
         </div>
         <button type="button" class="btn" id="play-chord">Play chord</button>
         <button type="button" class="btn" id="play-arp">Play arpeggio</button>
+        <button type="button" class="btn" id="copy-link">Copy link</button>
       </div>
     </div>
     <div class="board" id="boardWrap"></div>
@@ -267,6 +268,36 @@ function loadWide() {
   return (window.innerWidth || 0) >= 1280;
 }
 const state = { root: 0, q: 'maj', scale: 'ionian', sets: [3], selSet: 3, inv: 0, pos: 0, view: 'all', labels: 'notes', wide: loadWide() };
+// Link with settings: the choices are written into the address (for example ?root=Eb&type=min&strings=432.321&inv=1),
+// so a bookmarked or shared link opens the page exactly as it was. Link.get and Link.set are in site.js.
+const LINK_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+const LINK_VIEWS = ['all', 'inv0', 'inv1', 'inv2', 'single'], LINK_LABELS = ['notes', 'intervals', 'both'];
+const setCode = si => STRING_SETS[si].map(s => 6 - s).join('');          // string set as written in the link: 321, 432 ...
+function loadLink() {
+  const get = window.Link ? window.Link.get : () => null;
+  const root = get('root'), q = get('type'), scale = get('scale'), strings = get('strings'), sel = get('sel');
+  const num = k => { const v = get(k); return v !== null && /^\d+$/.test(v) ? +v : null; };
+  if (root && /^[A-G](#|b)?$/.test(root)) state.root = nameToPc(root);
+  if (q && Object.prototype.hasOwnProperty.call(QUALITIES, q)) { state.q = q; state.scale = SCALES_BY_Q[q][0]; }
+  if (scale && SCALES_BY_Q[state.q].includes(scale)) state.scale = scale;
+  if (strings) {
+    const sets = STRING_SETS.map((_, i) => i).filter(i => strings.split('.').includes(setCode(i)));
+    if (sets.length) { state.sets = sets; state.selSet = sets[0]; }
+  }
+  const selSet = STRING_SETS.findIndex((_, i) => setCode(i) === sel);
+  if (selSet >= 0 && state.sets.includes(selSet)) state.selSet = selSet;
+  const inv = num('inv'), shape = num('shape'), view = get('view'), labels = get('labels');
+  if (inv !== null && inv <= 2) state.inv = inv;
+  if (shape !== null && shape >= 1) state.pos = shape - 1;
+  if (LINK_VIEWS.includes(view)) { state.view = view; if (view.startsWith('inv')) state.inv = +view.slice(3); }
+  if (LINK_LABELS.includes(labels)) state.labels = labels;
+}
+function saveLink() {
+  if (!window.Link) return;
+  window.Link.set({ root: LINK_ROOTS[state.root], type: state.q, scale: state.scale, strings: state.sets.map(setCode).join('.'),
+    inv: state.inv, sel: setCode(state.selSet), shape: state.pos + 1, view: state.view, labels: state.labels });
+}
+loadLink();
 const ROOT_LABELS = ['C', 'C♯|D♭', 'D', 'D♯|E♭', 'E', 'F', 'F♯|G♭', 'G', 'G♯|A♭', 'A', 'A♯|B♭', 'B'];
 const setLabel = si => STRING_SETS[si].map(s => 6 - s).join(' · ');
 const setNotes = si => STRING_SETS[si].map(s => STRING_NAMES[s]).join(' ');
@@ -595,10 +626,12 @@ document.addEventListener('click', e => {
     if (state.view.startsWith('inv')) state.view = 'inv' + state.inv;
   }
   render();
+  saveLink();
   if (['root', 'q', 'set', 'setall', 'inv', 'view', 'step', 'dot', 'width'].includes(a)) reveal(current().sel);
 });
 $('play-chord').addEventListener('click', () => playShape(current().sel, 'chord'));
 $('play-arp').addEventListener('click', () => playShape(current().sel, 'arp'));
+$('copy-link').addEventListener('click', () => { saveLink(); window.Link.copy($('copy-link')); });
 
 // the two fretboards scroll together on narrow screens
 [['boardWrap', 'scaleWrap'], ['scaleWrap', 'boardWrap']].forEach(([from, to]) => {
@@ -642,6 +675,7 @@ if (window.addEventListener) {
 }
 
 render();
+if (location.search) reveal(current().sel);      // opened from a link with settings: bring the selected shape into view
 </script>
 
 </body></html>

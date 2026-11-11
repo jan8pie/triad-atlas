@@ -16,11 +16,14 @@ window.TRIAD_SK = {
 
   // ---- Horná lišta a menu (site.js) -------------------------------------------
   'Triads': 'Trojzvuky',
+  'Chords of a key': 'Akordy tóniny',
   'Major & minor': 'Dur a mol',
   'Seventh chords': 'Septakordy',
   'Sus chords': 'Sus akordy',
   '6 & add9 chords': 'Akordy 6 a add9',
   'Pages': 'Stránky',
+  'Copy link': 'Kopírovať odkaz',
+  'Link copied': 'Odkaz skopírovaný',
   'Language': 'Jazyk',
   'Switch between light and dark colours': 'Prepnúť svetlé a tmavé farby',
   'Light / dark': 'Svetlá / tmavá',
@@ -268,5 +271,50 @@ window.TRIAD_SK = {
   'The F shape on the four high strings: the top of the E-shape barre chord, so the root on the D string is its highest fret. For the 6, the 5 on the B string moves up two frets. For add9, the root on the high e string moves up two frets. These are the easiest shapes on the page.':
     'Tvar F na štyroch vysokých strunách: vrchná časť barré akordu v tvare E, takže základný tón na strune D je na jeho najvyššom pražci. Pri 6 sa 5 na strune B posunie o dva pražce vyššie. Pri add9 sa základný tón na vysokej strune e posunie o dva pražce vyššie. Sú to najľahšie tvary na tejto stránke.',
   'Good to know: X6 has the same four notes as the minor seventh chord three frets lower, for example C6 (C E G A) and Am7 (A C E G).':
-    'Dobré vedieť: X6 má rovnaké štyri tóny ako molový septakord o tri pražce nižšie, napríklad C6 (C E G A) a Am7 (A C E G).'
+    'Dobré vedieť: X6 má rovnaké štyri tóny ako molový septakord o tri pražce nižšie, napríklad C6 (C E G A) a Am7 (A C E G).',
+
+  // ---- Akordy tóniny: harmonizovaná stupnica (harmonized-scale.html) -----------
+  'Chords of a Key · Triad Atlas': 'Akordy tóniny · Triad Atlas',
+  'The harmonized scale on guitar: the seven triads of a major or minor key on three strings, walking up the neck.':
+    'Harmonizovaná stupnica na gitare: sedem trojzvukov durovej alebo molovej tóniny na troch strunách, postupne hore po hmatníku.',
+  'Harmonized scale': 'Harmonizovaná stupnica',
+  'Chords of a Key': 'Akordy tóniny',
+  'Take a scale and build a triad on each of its seven notes, using only the notes of that scale: every other note, so 1 · 3 · 5, then 2 · 4 · 6, and so on. These seven chords belong to the key. On three neighbouring strings each finger simply walks up the scale along its own string. Step through the chords and watch which note moves one fret and which moves two.':
+    'Zober stupnicu a na každom z jej siedmich tónov postav trojzvuk len z tónov tej stupnice: vždy každý druhý tón, teda 1 · 3 · 5, potom 2 · 4 · 6 a tak ďalej. Týchto sedem akordov patrí do tóniny. Na troch susedných strunách každý prst jednoducho kráča po stupnici po svojej strune. Prechádzaj akordy a sleduj, ktorý tón sa posunie o jeden pražec a ktorý o dva.',
+  'Key': 'Tónina',
+  'Key settings': 'Nastavenia tóniny',
+  'Fretboard': 'Hmatník',
+  'key:major': 'dur',
+  'key:minor': 'mol',
+  'In the chord': 'V akorde',
+  'In the key': 'V tónine',
+  '1 to 7': '1 až 7',
+  'bass 1': 'bas 1',
+  'bass 3': 'bas 3',
+  'bass 5': 'bas 5',
+  'Play up the neck': 'Prehrať hore po hmatníku',
+  'Stop': 'Zastaviť',
+  'Choose chord, from the nut upward': 'Výber akordu, od nultého pražca nahor',
+  'Previous chord, lower on the neck': 'Predchádzajúci akord, nižšie na hmatníku',
+  'Next chord, higher on the neck': 'Ďalší akord, vyššie na hmatníku',
+  'Chord {i} of {n}': 'Akord {i} z {n}',
+  'Notes {notes}: steps {steps} of the {key} scale.': 'Tóny {notes}: stupne {steps} stupnice {key}.',
+  'Strings {set} ({strings}), frets {frets}.': 'Struny {set} ({strings}), pražce {frets}.',
+  'This chord does not fit on these strings within the first {n} frets.': 'Tento akord sa na týchto strunách do prvých {n} pražcov nezmestí.',
+  'The chords of {key} on strings {set}, selected: {chord}': 'Akordy tóniny {key} na strunách {set}, vybraný: {chord}',
+  ', frets {frets}': ', pražce {frets}',
+  'The seven chords of {key}': 'Sedem akordov tóniny {key}',
+  'The order is the same in every major key: major, minor, minor, major, major, minor, diminished.':
+    'Poradie je v každej durovej tónine rovnaké: dur, mol, mol, dur, dur, mol, zmenšený.',
+  'The order is the same in every minor key: minor, diminished, major, minor, minor, major, major.':
+    'Poradie je v každej molovej tónine rovnaké: mol, zmenšený, dur, mol, mol, dur, dur.',
+  'Show and play {numeral}, {chord}: {notes}': 'Zobraziť a prehrať {numeral}, {chord}: {notes}',
+  '1: root of the chord': '1: základný tón akordu',
+  '3 and 5 of a major chord': '3 a 5 durového akordu',
+  '♭5: diminished fifth': '♭5: zmenšená kvinta',
+  'Other scale notes on these strings (click one to jump to its chord)': 'Ostatné tóny stupnice na týchto strunách (klikni na niektorý a skočíš na jeho akord)',
+  'Standard tuning (E A D G B e). Each chord box shows the lowest place of that chord on the chosen strings, with the fret number on the left. Capital numerals (I, IV, V) are major chords, small ones (ii, iii, vi) are minor and ° means diminished.':
+    'Štandardné ladenie (E A D G B e). Každý diagram ukazuje najnižšie miesto daného akordu na vybraných strunách, číslo pražca je vľavo. Veľké rímske číslice (I, IV, V) sú durové akordy, malé (ii, iii, vi) molové a ° znamená zmenšený. Tóny sú písané medzinárodne: B je slovenské H a B♭ je slovenské B.',
+  'In a minor key the 3rd, 6th and 7th notes are one fret lower than in the major key, so their numerals carry a ♭.':
+    'V molovej tónine sú 3., 6. a 7. tón o pražec nižšie než v durovej, preto majú ich číslice ♭.'
 };
